@@ -4,3 +4,4 @@
 node_modules
 logs/*
 ecosystem.config.js
+server/api/notificationSetting/serviceAccountKey.json

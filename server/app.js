@@ -5,7 +5,10 @@ let server = require('http').createServer(app);
 var mongoose = require('mongoose');
 // mongoose.plugin(require('mongoose-paginate'));
 // var figlet = require('figlet');
-
+// load all variable from .env file to system enviornment
+require('dotenv').config({
+	path: __dirname + '/config/.env'
+});
 
 /////////// this for notification
 const { initializeNotificationScheduler, refreshSchedules } = require('../server/api/notificationSetting/sendPushNotification');
@@ -13,10 +16,7 @@ const { initializeNotificationScheduler, refreshSchedules } = require('../server
  initializeNotificationScheduler();
 /////////// this for notification
 
-// load all variable from .env file to system enviornment
-require('dotenv').config({
-	path: __dirname + '/config/.env'
-});
+
 
 // Set default node environment to development
 process.env.NODE_ENV = process.env.NODE_ENV ? process.env.NODE_ENV : 'development';
