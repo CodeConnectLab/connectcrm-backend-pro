@@ -169,7 +169,7 @@ exports.bulkLeadUpload = async (fileData, user, formData) => {
 
 
 //////  get All lead
-exports.getAllLeadsByCompany = async (params, user) => {
+exports.getAllLeadsByCompany = async ({leadAccessFilter},params, user) => {
     try {
         if (!user?.companyId || !user?._id) {
             throw new Error('Invalid user data');
@@ -195,6 +195,7 @@ exports.getAllLeadsByCompany = async (params, user) => {
 
         const data = await getAllLeadByCompanyWithPagination(
             user.role,
+            leadAccessFilter,
             user.companyId,
             user._id,
             validPage,
@@ -232,6 +233,7 @@ exports.getAllLeadsByCompany = async (params, user) => {
 
 const getAllLeadByCompanyWithPagination = async (
     role,
+    leadAccessFilter,
     companyId,
     userId,
     page,
@@ -245,27 +247,27 @@ const getAllLeadByCompanyWithPagination = async (
 
       // Base query with company and deleted condition
       let query = {
-        companyId: companyId
-        //  deleted: false
+        companyId: companyId,
+        ...leadAccessFilter // 🛑 Very important: Middleware filter applied here
       }
 
       // Add assignedAgent filter only for User role
-      if (role !== userRoles.SUPER_ADMIN) {
-        if (role === userRoles.USER) {
-          // For regular users - show only their own data
-          query.assignedAgent = userId
-        } else if (role === userRoles.TEAM_ADMIN) {
-          // For Team Leaders - show their data AND data of users assigned to them
-          query.$or = [
-            { assignedAgent: userId }, // TL's own data
-            {
-              assignedAgent: {
-                $in: await User.distinct('_id', { assignedTL: userId })
-              }
-            } // Data where agent is any user assigned to this TL
-          ]
-        }
-      }
+      // if (role !== userRoles.SUPER_ADMIN) {
+      //   if (role === userRoles.USER) {
+      //     // For regular users - show only their own data
+      //     query.assignedAgent = userId
+      //   } else if (role === userRoles.TEAM_ADMIN) {
+      //     // For Team Leaders - show their data AND data of users assigned to them
+      //     query.$or = [
+      //       { assignedAgent: userId }, // TL's own data
+      //       {
+      //         assignedAgent: {
+      //           $in: await User.distinct('_id', { assignedTL: userId })
+      //         }
+      //       } // Data where agent is any user assigned to this TL
+      //     ]
+      //   }
+      // }
 
       // Add date range filter if provided
       if (filters.startDate && filters.endDate) {

@@ -11,6 +11,8 @@ const express = require('express'),
     wantResponse: true
   }
 
+  const leadAccessMiddleware = require('../../middleware/leadAccessMiddleware');
+
   // const upload = require('../middlewares/upload.middleware');
 
 const upload = require('../../config/multer.config')
@@ -41,6 +43,7 @@ router.get(
   auth.isAuthenticated({
     // adminOnly: true
   }),
+  leadAccessMiddleware,
   controller.getAllByCompany
 )
 

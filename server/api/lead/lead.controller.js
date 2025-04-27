@@ -26,10 +26,11 @@ exports.getAllByCompany = (req, res) => {
       startDate: req.query.startDate,
       endDate: req.query.endDate,
       sortBy: 'updatedAt',
-      sortOrder: 'asc'
+      sortOrder: 'asc',
+       
     };
   
-    return service.getAllLeadsByCompany(queryParams, req.user)
+    return service.getAllLeadsByCompany({ leadAccessFilter: req.leadAccessFilter }, queryParams, req.user)
       .then(result =>responseHandler.success1(res, result, "Leads retrieved successfully!", 200))
       .catch(error => responseHandler.error(res, error, error.message, 500));
   };

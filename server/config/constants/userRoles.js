@@ -1,9 +1,3 @@
-// module.exports = {
-//     SUPER_ADMIN: "Super Admin",
-//     USER: "Employee",
-//     // SUPPORT: "Support",
-//     TEAM_ADMIN: "Team Leader"
-// }
 
 module.exports = {
     SUPER_ADMIN: "Super Admin",
@@ -20,27 +14,17 @@ module.exports = {
 
   
 
-  const roleToField = {
-    "VERTICAL": "assignedVertical",
-    "VP": "assignedVP",
-    "AVP": "assignedAVP",
-    "GM": "assignedGM",
-    "AGM": "assignedAGM",
-    "AS": "assignedAS",
-    "TEAM_ADMIN": "assignedTL"
-  };
+  // const roleToField = {
+  //   "VERTICAL": "assignedVertical",
+  //   "VP": "assignedVP",
+  //   "AVP": "assignedAVP",
+  //   "GM": "assignedGM",
+  //   "AGM": "assignedAGM",
+  //   "AS": "assignedAS",
+  //   "TEAM_ADMIN": "assignedTL"
+  // };
+// constants/roles.js
 
-  const roleHierarchy = {
-    "Super Admin": [],
-    "Vertical": ["AS", "VP", "AVP", "GM", "AGM", "Team Leader", "Employee"],
-    "AS": ["VP", "AVP", "GM", "AGM", "Team Leader", "Employee"],
-    "VP": ["AVP", "GM", "AGM", "Team Leader", "Employee"],
-    "AVP": ["GM", "AGM", "Team Leader", "Employee"],
-    "GM": ["AGM", "Team Leader", "Employee"],
-    "AGM": ["Team Leader", "Employee"],
-    "Team Leader": ["Employee"],
-    "Employee": []
-  };
-  
-  
+
+
 

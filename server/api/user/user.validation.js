@@ -37,7 +37,13 @@ exports.createSupportUser = {
     email: Joi.string().required(),
     role: Joi.string().required().valid(
       USER_ROLES.USER,
-      USER_ROLES.TEAM_ADMIN
+      USER_ROLES.TEAM_ADMIN,
+      USER_ROLES.AS,
+      USER_ROLES.AGM,
+      USER_ROLES.GM,
+      USER_ROLES.AVP,
+      USER_ROLES.VP,
+      USER_ROLES.VERTICAL
     ),
     password: Joi.string().allow(null),
     name: Joi.string().allow(null),
