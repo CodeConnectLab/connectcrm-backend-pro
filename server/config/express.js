@@ -20,7 +20,8 @@ const allowedOrigins = [
   'https://crm.redkaizen.in',
   'http://localhost:9000',
   'http://13.235.233.186',
-  'http://13.235.233.186:3000'
+  'http://13.235.233.186:3000',
+  'http://localhost:5173'
 ];
 
 module.exports = function (app) {
