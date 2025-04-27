@@ -1,4 +1,4 @@
-  const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 const timestamps = require('mongoose-timestamp');
 const mongooseDelete = require('mongoose-delete');
 
@@ -23,7 +23,8 @@ const UserSchema = new Schema({
   role: {
     type: String,
     required: true,
-    enum: ['Super Admin', 'Employee', 'Team Leader'],
+    // enum: ['Super Admin', 'Employee', 'Team Leader'],
+    enum: ['Super Admin', 'Vertical', 'AS', 'VP', 'AVP', 'GM', 'AGM', 'Team Leader', 'Employee'],
     default: 'Employee'
   },
   companyId: {
@@ -44,6 +45,16 @@ const UserSchema = new Schema({
     ref: "User",
     required: false
   },
+
+
+  assignedAS: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  assignedAGM: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  assignedGM: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  assignedAVP: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  assignedVP: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  assignedVertical: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
+
   resetPasswordToken: {
     type: String
   },
@@ -75,10 +86,10 @@ const UserSchema = new Schema({
   ipaddress: {
     type: String
   },
-  fcmMobileToken:{
+  fcmMobileToken: {
     type: String
   },
-  fcmWebToken:{
+  fcmWebToken: {
     type: String
   },
   bio: {

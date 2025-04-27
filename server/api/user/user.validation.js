@@ -44,6 +44,14 @@ exports.createSupportUser = {
     phone: Joi.string().allow(null),
     isActive:Joi.boolean().allow(null),
     assignedTL: Joi.string().allow('', null).optional(),
+   ///// new added
+    assignedAS: Joi.string().allow('', null).optional(),
+    assignedAGM: Joi.string().allow('', null).optional(),
+    assignedGM: Joi.string().allow('', null).optional(),
+    assignedAVP: Joi.string().allow('', null).optional(),
+    assignedVP: Joi.string().allow('', null).optional(),
+    assignedVertical: Joi.string().allow('', null).optional(),
+
   })
 }
 
