@@ -84,7 +84,11 @@ exports.updateDeviceToken = (req, res, next) => {
       .catch(error => responseHandler.error(res, error, error.message, 500));
 }
 
-
+exports.getUserTree = (req, res, next) => {
+    return service.getUserTree(req.params.id, req.user)
+        .then(result => responseHandler.success(res, result, "User tree fetch successful!", 200))
+        .catch(error => responseHandler.error(res, error, error.message, 500));
+}
 // exports.listSupport = (req, res, next) => {
 //     return service.listUsers({ role: USER_ROLES.SUPPORT }, req.user)
 //         .then(result => responseHandler.success(res, result, "Support fetch successful!", 200))

@@ -21,7 +21,7 @@ module.exports = function (app) {
   app.use("/api", require("./api/geoLocation/geoLocation.route"));
   app.use("/api", require("./api/notificationSetting/notificationSetting.route"));
   app.use("/api", require("./api/permission/permission.route"))
-  // app.use("/api", require("./api/userActivity/userActivity.route"));
+  app.use("/api", require("./api/booking/booking.route"));
   // app.use("/api", require('./api/feature/feature.route'));
   // app.use("/api", require('./api/Permission/permission.route'));
   // app.use("/api", require('./api/tagSettings/tagSettings.route'));

@@ -178,5 +178,14 @@ router.put(
   }),
   controller.updateDeviceToken
 )
+
+/////////////// get user by tree
+router.get(
+  usersVersion + "/get-user-tree/:id",
+  auth.isAuthenticated({
+    // adminOnly: true
+  }),
+  controller.getUserTree
+)
  
 module.exports = router;

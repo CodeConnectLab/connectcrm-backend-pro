@@ -439,6 +439,39 @@ exports.updateDeviceToken = async({fcmWebToken, fcmMobileToken}, user) => {
   }
 };
 
+/////////// get User Tree
+// Role Hierarchy
+const ROLE_HIERARCHY = [
+  'USER', 'TEAM_ADMIN', 'AGM', 'GM', 'AVP', 'VP', 'AS', 'VERTICAL'
+];
+exports.getUserTree = async (userId, user) => {
+  try { 
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return { message: 'User not found' };
+    }
+    const hierarchy = {};
+    let currentUser = user;
+    let currentRoleIndex = ROLE_HIERARCHY.indexOf(currentUser.role);
+    while (currentRoleIndex < ROLE_HIERARCHY.length - 1) {
+      const nextRole = ROLE_HIERARCHY[currentRoleIndex + 1];
+
+      if (currentUser[`assigned${nextRole}`]) {
+        const nextUser = await UserModel.findById(currentUser[`assigned${nextRole}`]);
+        hierarchy[nextRole] = nextUser ? { id: nextUser._id, name: nextUser.name } : null;
+        currentUser = nextUser;
+      }
+
+      currentRoleIndex++;
+    }
+
+    return hierarchy ;
+  } catch (error) {
+    console.error('Error fetching hierarchy:', error);
+    throw new Error('Internal server error');
+  }
+}
+
 //////////  user list
 
 exports.listUsers = async ({ }, user) => {
