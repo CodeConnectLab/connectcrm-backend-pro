@@ -66,3 +66,9 @@ exports.getUpcomingBooking = (req, res) => {
         .then((result) => responseHandler.success(res, result, "Upcomming Booking list retrieved successfully!", 200))
         .catch((error) => responseHandler.error(res, error, error.message, 500));
 }
+
+exports.getBookingOverview = (req, res) => {
+    return service.getBookingOverview(req.user)
+        .then((result) => responseHandler.success(res, result, "Booking overview retrieved successfully!", 200))
+        .catch((error) => responseHandler.error(res, error, error.message, 500));
+}

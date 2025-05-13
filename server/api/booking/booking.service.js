@@ -1,4 +1,4 @@
-
+const UserModel = require('../user/user.model');
 const BookingModel = require('./booking.model');
 // Add Booking
 exports.addBooking = async (body, user, res) => {
@@ -346,5 +346,80 @@ exports.getUpcomingBooking = async (queryParams, user) => {
     }
 };
 
+
+exports.getBookingOverview = async (user) => {
+    try {
+        const companyId = user?.companyId;
+        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+        const today = new Date();
+
+        const totalBookingsData = await BookingModel.aggregate([{ $match: { companyId } }, { $group: { _id: null, count: { $sum: 1 }, totalAmount: { $sum: '$TSP' } } }]);
+        const totalBookings = totalBookingsData[0]?.count || 0;
+        const totalBookingAmount = totalBookingsData[0]?.totalAmount || 0;
+        const bookingsThisYearData = await BookingModel.aggregate([{ $match: { companyId, bookingDate: { $gte: startOfYear, $lte: today } } }, { $group: { _id: null, count: { $sum: 1 }, totalAmount: { $sum: '$TSP' } } }]);
+        const bookingsThisYear = bookingsThisYearData[0]?.count || 0;
+        const bookingsThisYearAmount = bookingsThisYearData[0]?.totalAmount || 0;
+        const bookingsThisMonthData = await BookingModel.aggregate([{ $match: { companyId, bookingDate: { $gte: startOfMonth, $lte: today } } }, { $group: { _id: null, count: { $sum: 1 }, totalAmount: { $sum: '$TSP' } } }]);
+        const bookingsThisMonth = bookingsThisMonthData[0]?.count || 0;
+        const bookingsThisMonthAmount = bookingsThisMonthData[0]?.totalAmount || 0;
+        const cancelBookingsData = await BookingModel.aggregate([{ $match: { companyId, bookingStatus: 'cancelled' } }, { $group: { _id: null, count: { $sum: 1 }, totalAmount: { $sum: '$TSP' } } }]);
+        const cancelBookings = cancelBookingsData[0]?.count || 0;
+        const cancelBookingAmount = cancelBookingsData[0]?.totalAmount || 0;
+
+        const pendingAmount = await BookingModel.aggregate([
+            { $match: { companyId, bookingStatus: { $ne: 'cancelled' } } },
+            { $group: { _id: null, totalPending: { $sum: { $subtract: ['$TSP', '$totalReceived'] } } } }
+        ]);
+
+        const pendingThisMonth = await BookingModel.aggregate([
+            { $match: { companyId, bookingDate: { $gte: startOfMonth, $lte: today }, bookingStatus: { $ne: 'cancelled' } } },
+            { $group: { _id: null, monthPending: { $sum: { $subtract: ['$TSP', '$totalReceived'] } } } }
+        ]);
+
+        const getRoleData = async (role) => {
+            const data = await BookingModel.aggregate([
+                { $match: { companyId } },
+                {
+                    $group: {
+                        _id: `$reference.${role}`,
+                        thisMonth: { $sum: { $cond: [{ $gte: ['$bookingDate', startOfMonth] }, '$TSP', 0] } },
+                        thisYear: { $sum: { $cond: [{ $gte: ['$bookingDate', startOfYear] }, '$TSP', 0] } }
+                    }
+                }
+            ]);
+
+            const userIds = data.map(d => d._id).filter(id => id);
+            const users = await UserModel.find({ _id: { $in: userIds } }, 'name');
+
+            return data.map(d => ({
+                _id: d._id || null,
+                name: d._id ? users.find(u => u._id.equals(d._id))?.name : 'Unknown',
+                thisMonth: d.thisMonth,
+                thisYear: d.thisYear
+            })).filter(d => d._id);
+        };
+
+        const roles = ['vertical', 'as', 'vp', 'avp', 'gm', 'agm', 'tlcp', 'employee'];
+        const performanceOverview = {};
+        for (const role of roles) {
+            performanceOverview[role] = await getRoleData(role);
+        }
+
+        return {
+            total: { totalBookingAmount, totalBookings },
+            thisMonth: { bookingsThisMonth, bookingsThisMonthAmount },
+            thisYear: { bookingsThisYear, bookingsThisYearAmount },
+            cancelBookings: { cancelBookings, cancelBookingAmount },
+            pendingAmount: pendingAmount[0]?.totalPending || 0,
+            pendingThisMonth: pendingThisMonth[0]?.monthPending || 0,
+            performanceOverview
+        };
+
+    } catch (error) {
+        console.error('Error fetching booking overview:', error);
+        throw new Error('Server error');
+    }
+}
 
 

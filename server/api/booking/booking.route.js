@@ -45,5 +45,12 @@ router.get(usersVersion + "/get-booking-details/:id",
     controller.getBookingDetails);
 
 
+ ////////// booking overview api
+router.get(usersVersion + "/booking-overview",
+    auth.isAuthenticated({
+  }),
+    controller.getBookingOverview);   
+
+
 
   module.exports = router;

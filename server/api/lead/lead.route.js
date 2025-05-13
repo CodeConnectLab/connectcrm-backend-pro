@@ -47,6 +47,9 @@ router.get(
   controller.getAllByCompany
 )
 
+/////get all lead by filter
+
+
 ////get all followup
 router.get(
   usersVersion + '/lead/follow-up',
