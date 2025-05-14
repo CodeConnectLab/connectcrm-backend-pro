@@ -21,7 +21,8 @@ const allowedOrigins = [
   'http://localhost:9000',
   'http://13.235.233.186',
   'http://13.235.233.186:3000',
-  'http://localhost:5173'
+  'http://localhost:5173',
+  'https://connectcrm-frontend-pro.vercel.app'
 ];
 
 module.exports = function (app) {
