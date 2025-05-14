@@ -56,6 +56,7 @@ router.get(
   auth.isAuthenticated({
     // adminOnly: true
   }),
+  leadAccessMiddleware,
   // joiValidate(validationInputs.getAllFollowupLeadsFilter, options),
   controller.getAllFollowupLeadsByCompany
 )
@@ -67,6 +68,7 @@ router.get(
   auth.isAuthenticated({
     // adminOnly: true
   }),
+  leadAccessMiddleware,
   controller.getAllImportedLeadsByCompany
 )
 
@@ -76,6 +78,7 @@ router.get(
   auth.isAuthenticated({
     // adminOnly: true
   }),
+  leadAccessMiddleware,
   controller.getAllOutsourcedLeadsByCompany
 )
 

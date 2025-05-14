@@ -357,7 +357,7 @@ const getAllLeadByCompanyWithPagination = async (
 
 
 //////  get All Followup lead
-exports.getAllFollowupLeadsByCompany = async (params, user) => {
+exports.getAllFollowupLeadsByCompany = async ({leadAccessFilter},params, user) => {
     try {
         if (!user?.companyId || !user?._id) {
             throw new Error('Invalid user data');
@@ -379,6 +379,7 @@ exports.getAllFollowupLeadsByCompany = async (params, user) => {
 
         const data = await getAllFollowupLeadByCompanyWithPagination(
             user.role,
+            leadAccessFilter,
             user.companyId,
             user._id,
             Number(page),
@@ -414,6 +415,7 @@ exports.getAllFollowupLeadsByCompany = async (params, user) => {
 
 const getAllFollowupLeadByCompanyWithPagination = async (
     role,
+    leadAccessFilter,
     companyId,
     userId,
     page,
@@ -434,30 +436,34 @@ const getAllFollowupLeadByCompanyWithPagination = async (
       // Base query with company and deleted condition
       let query = {
         companyId: companyId,
+        ...leadAccessFilter, // 🛑 Very important: Middleware filter applied here
         leadUpdated:true,
         leadStatus: { $in: statusIds } // Only include leads with status that have showFollowUp true
       }
-
+// let query = {
+//         companyId: companyId,
+//         ...leadAccessFilter // 🛑 Very important: Middleware filter applied here
+//       }
     ///skip if leadUpdated is false
          
 
       // Add assignedAgent filter only for User role
-      if (role !== userRoles.SUPER_ADMIN) {
-        if (role === userRoles.USER) {
-          // For regular users - show only their own data
-          query.assignedAgent = userId
-        } else if (role === userRoles.TEAM_ADMIN) {
-          // For Team Leaders - show their data AND data of users assigned to them
-          query.$or = [
-            { assignedAgent: userId }, // TL's own data
-            {
-              assignedAgent: {
-                $in: await User.distinct('_id', { assignedTL: userId })
-              }
-            } // Data where agent is any user assigned to this TL
-          ]
-        }
-      }
+      // if (role !== userRoles.SUPER_ADMIN) {
+      //   if (role === userRoles.USER) {
+      //     // For regular users - show only their own data
+      //     query.assignedAgent = userId
+      //   } else if (role === userRoles.TEAM_ADMIN) {
+      //     // For Team Leaders - show their data AND data of users assigned to them
+      //     query.$or = [
+      //       { assignedAgent: userId }, // TL's own data
+      //       {
+      //         assignedAgent: {
+      //           $in: await User.distinct('_id', { assignedTL: userId })
+      //         }
+      //       } // Data where agent is any user assigned to this TL
+      //     ]
+      //   }
+      // }
 
       // Add date range filter if provided
       if (filters.startDate && filters.endDate) {
@@ -545,7 +551,7 @@ const getAllFollowupLeadByCompanyWithPagination = async (
 };
 
 ////// get all imported lead
-exports.getAllImportedLeadsByCompany = async (params, user) => {
+exports.getAllImportedLeadsByCompany = async ({leadAccessFilter},params, user) => {
     try {
         if (!user?.companyId || !user?._id) {
             throw new Error('Invalid user data');
@@ -567,6 +573,7 @@ exports.getAllImportedLeadsByCompany = async (params, user) => {
 
         const data = await getAllImportedLeadsByCompanyWithPagination(
             user.role,
+            leadAccessFilter,
             user.companyId,
             user._id,
             Number(page),
@@ -602,6 +609,7 @@ exports.getAllImportedLeadsByCompany = async (params, user) => {
 
 const getAllImportedLeadsByCompanyWithPagination = async (
   role,
+  leadAccessFilter,
   companyId,
   userId,
   page,
@@ -624,25 +632,26 @@ const getAllImportedLeadsByCompanyWithPagination = async (
       companyId: companyId,
       leadStatus: { $in: statusIds }, // Only include leads with status that have showFollowUp true
       leadUpdated:false,
-      leadAddType: 'Import'
+      leadAddType: 'Import',
+      ...leadAccessFilter,
     }
     // Add assignedAgent filter only for User role
-    if (role !== userRoles.SUPER_ADMIN) {
-      if (role === userRoles.USER) {
-        // For regular users - show only their own data
-        query.assignedAgent = userId
-      } else if (role === userRoles.TEAM_ADMIN) {
-        // For Team Leaders - show their data AND data of users assigned to them
-        query.$or = [
-          { assignedAgent: userId }, // TL's own data
-          {
-            assignedAgent: {
-              $in: await User.distinct('_id', { assignedTL: userId })
-            }
-          } // Data where agent is any user assigned to this TL
-        ]
-      }
-    }
+    // if (role !== userRoles.SUPER_ADMIN) {
+    //   if (role === userRoles.USER) {
+    //     // For regular users - show only their own data
+    //     query.assignedAgent = userId
+    //   } else if (role === userRoles.TEAM_ADMIN) {
+    //     // For Team Leaders - show their data AND data of users assigned to them
+    //     query.$or = [
+    //       { assignedAgent: userId }, // TL's own data
+    //       {
+    //         assignedAgent: {
+    //           $in: await User.distinct('_id', { assignedTL: userId })
+    //         }
+    //       } // Data where agent is any user assigned to this TL
+    //     ]
+    //   }
+    // }
 
     // Add date range filter if provided
     if (filters.startDate && filters.endDate) {
@@ -730,7 +739,7 @@ const getAllImportedLeadsByCompanyWithPagination = async (
 }
 
 /////// get all outsouce lead 
-exports.getAllOutsourcedLeadsByCompany = async (params, user) => {
+exports.getAllOutsourcedLeadsByCompany = async ({leadAccessFilter},params, user) => {
     try {
         if (!user?.companyId || !user?._id) {
             throw new Error('Invalid user data');
@@ -752,6 +761,7 @@ exports.getAllOutsourcedLeadsByCompany = async (params, user) => {
 
         const data = await getAllOutsourcedLeadsByCompanyWithPagination(
             user.role,
+            leadAccessFilter,
             user.companyId,
             user._id,
             Number(page),
@@ -787,6 +797,7 @@ exports.getAllOutsourcedLeadsByCompany = async (params, user) => {
 
 const getAllOutsourcedLeadsByCompanyWithPagination = async (
     role,
+    leadAccessFilter,
     companyId,
     userId,
     page,
@@ -815,25 +826,26 @@ const getAllOutsourcedLeadsByCompanyWithPagination = async (
               { leadStatus: { $exists: false } }  // Jis lead ka leadStatus field hi na ho
           ],
             leadUpdated:false,
-            leadAddType:'ThirdParty'
+            leadAddType:'ThirdParty',
+            ...leadAccessFilter,
         };
         // Add assignedAgent filter only for User role
-      if (role !== userRoles.SUPER_ADMIN) {
-        if (role === userRoles.USER) {
-          // For regular users - show only their own data
-          query.assignedAgent = userId
-        } else if (role === userRoles.TEAM_ADMIN) {
-          // For Team Leaders - show their data AND data of users assigned to them
-          query.$or = [
-            { assignedAgent: userId }, // TL's own data
-            {
-              assignedAgent: {
-                $in: await User.distinct('_id', { assignedTL: userId })
-              }
-            } // Data where agent is any user assigned to this TL
-          ]
-        }
-      }
+      // if (role !== userRoles.SUPER_ADMIN) {
+      //   if (role === userRoles.USER) {
+      //     // For regular users - show only their own data
+      //     query.assignedAgent = userId
+      //   } else if (role === userRoles.TEAM_ADMIN) {
+      //     // For Team Leaders - show their data AND data of users assigned to them
+      //     query.$or = [
+      //       { assignedAgent: userId }, // TL's own data
+      //       {
+      //         assignedAgent: {
+      //           $in: await User.distinct('_id', { assignedTL: userId })
+      //         }
+      //       } // Data where agent is any user assigned to this TL
+      //     ]
+      //   }
+      // }
        
         // Add date range filter if provided
         if (filters.startDate && filters.endDate) {

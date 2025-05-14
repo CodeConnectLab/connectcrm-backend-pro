@@ -50,7 +50,7 @@ exports.getAllFollowupLeadsByCompany = (req, res) => {
       sortOrder: 'asc'
     };
   
-    return service.getAllFollowupLeadsByCompany(queryParams, req.user)
+    return service.getAllFollowupLeadsByCompany({ leadAccessFilter: req.leadAccessFilter },queryParams, req.user)
       .then(result =>responseHandler.success1(res, result, "Leads retrieved successfully!", 200))
       .catch(error => responseHandler.error(res, error, error.message, 500));
   };
@@ -71,7 +71,7 @@ exports.getAllImportedLeadsByCompany = (req, res) => {
       sortBy: 'followUpDate',
       sortOrder: 'asc'
   };
-  return service.getAllImportedLeadsByCompany(queryParams, req.user)
+  return service.getAllImportedLeadsByCompany({ leadAccessFilter: req.leadAccessFilter },queryParams, req.user)
     .then(result =>responseHandler.success1(res, result, "Leads retrieved successfully!", 200))
     .catch(error => responseHandler.error(res, error, error.message, 500));
 }
@@ -91,7 +91,7 @@ exports.getAllOutsourcedLeadsByCompany = (req, res) => {
     sortBy: 'followUpDate',
     sortOrder: 'asc'
   };
-  return service.getAllOutsourcedLeadsByCompany(queryParams, req.user)
+  return service.getAllOutsourcedLeadsByCompany({ leadAccessFilter: req.leadAccessFilter },queryParams, req.user)
     .then(result =>responseHandler.success1(res, result, "Leads retrieved successfully!", 200))
     .catch(error => responseHandler.error(res, error, error.message, 500));
 }

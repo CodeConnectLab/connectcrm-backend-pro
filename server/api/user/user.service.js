@@ -444,7 +444,9 @@ exports.updateDeviceToken = async({fcmWebToken, fcmMobileToken}, user) => {
 const ROLE_HIERARCHY = [
   'USER', 'TEAM_ADMIN', 'AGM', 'GM', 'AVP', 'VP', 'AS', 'VERTICAL'
 ];
+///https://connectcrm-frontend-pro.vercel.app/booking/add-booking
 exports.getUserTree = async (userId, user) => {
+       console.log()
   try { 
     const user = await UserModel.findById(userId);
     if (!user) {
