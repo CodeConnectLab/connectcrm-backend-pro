@@ -123,9 +123,7 @@ exports.createAdminWithCompany = async ({companyData, userData, ipaddress},user)
   }
 }
 
-
-
-exports.createSupportUser = async ({name, email, role, password,phone,isActive,assignedTL }, user) => {
+exports.createSupportUser = async ({name, email, role, password,phone,isActive,assignedTL,assignedAS,assignedAGM,assignedGM,assignedAVP,assignedVP,assignedVertical }, user) => {
   try {   
     let emailExists = await UserModel.find({ email }).lean()
     if (emailExists.length) throw 'Email already exists!'
@@ -139,6 +137,12 @@ exports.createSupportUser = async ({name, email, role, password,phone,isActive,a
       role: role,
       phone,
       assignedTL,
+      assignedAS,
+      assignedAGM,
+      assignedGM,
+      assignedAVP,
+      assignedVP,
+      assignedVertical,
       isActive,
       hashedPassword: getHashedPassword(randPassword, userSalt),
       passowrdExpiry: new Date(new Date().setDate(new Date().getDate() + 10)),
@@ -187,7 +191,8 @@ exports.updateMe= async ({name,bio},user)=>{
     select: '-hashedPassword -hashSalt -otp -otpExpiry -resetPasswordToken'});
 }
 
-exports.updateDepartment = async (contentId, { name, bio, isActive, assignedTL, password, email, phone }, user) => {
+exports.updateDepartment = async (contentId, { name, bio, isActive, assignedTL,assignedAS, assignedAGM, assignedGM,assignedAVP,
+      assignedVP,assignedVertical, password, email, phone }, user) => {
   try {
       // First check if user exists
       const existingUser = await UserModel.findById(contentId);
@@ -225,6 +230,12 @@ exports.updateDepartment = async (contentId, { name, bio, isActive, assignedTL, 
           ...(bio && { bio }),
           ...(isActive !== undefined && { isActive }),
           ...(assignedTL && { assignedTL }),
+          ...(assignedAS && { assignedAS }),
+          ...(assignedAGM && { assignedAGM }),
+          ...(assignedGM && { assignedGM }),
+          ...(assignedAVP && { assignedAVP }),
+          ...(assignedVP && { assignedVP }),
+          ...(assignedVertical && { assignedVertical }),
           ...(email && { email }),
           ...(phone && { phone })
       };
