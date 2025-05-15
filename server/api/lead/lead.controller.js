@@ -66,7 +66,7 @@ exports.getAllImportedLeadsByCompany = (req, res) => {
       assignedAgent: req.query.assignedAgent,
       leadSource: req.query.leadSource,
       productService: req.query.productService,
-      startDate: req.query.startDate,
+      startDate: req.query.startDate, 
       endDate: req.query.endDate,
       sortBy: 'createdAt',
       sortOrder: 'desc'
