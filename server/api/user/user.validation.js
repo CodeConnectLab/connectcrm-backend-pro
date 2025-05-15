@@ -75,7 +75,15 @@ exports.updateMe={
    // profilePic: Joi.string().uri().optional(),
     // ipaddress: Joi.string().ip().optional(),
     // isPrime: Joi.boolean().optional(),
-    assignedTL: Joi.string().allow('', null).hex().length(24).optional(), // MongoDB ObjectId validation
+     //assignedTL: Joi.string().allow('', null).hex().length(24).optional(), // MongoDB ObjectId validation
+     assignedTL: Joi.string().allow('', null).optional(),
+   ///// new added
+    assignedAS: Joi.string().allow('', null).optional(),
+    assignedAGM: Joi.string().allow('', null).optional(),
+    assignedGM: Joi.string().allow('', null).optional(),
+    assignedAVP: Joi.string().allow('', null).optional(),
+    assignedVP: Joi.string().allow('', null).optional(),
+    assignedVertical: Joi.string().allow('', null).optional(),
   }).min(1)
 }
 

@@ -68,8 +68,8 @@ exports.getAllImportedLeadsByCompany = (req, res) => {
       productService: req.query.productService,
       startDate: req.query.startDate,
       endDate: req.query.endDate,
-      sortBy: 'followUpDate',
-      sortOrder: 'asc'
+      sortBy: 'createdAt',
+      sortOrder: 'desc'
   };
   return service.getAllImportedLeadsByCompany({ leadAccessFilter: req.leadAccessFilter },queryParams, req.user)
     .then(result =>responseHandler.success1(res, result, "Leads retrieved successfully!", 200))
