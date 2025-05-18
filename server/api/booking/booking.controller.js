@@ -44,6 +44,29 @@ exports.getBookingList = (req, res) => {
         .catch((error) => responseHandler.error(res, error, error.message, 500));
 }
 
+exports.getNewBooking = (req, res) => {
+      const queryParams = {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 10,
+        search: req.query.search,
+        employee: req.query.employee,
+        tlcp: req.query.tlcp,
+        avp: req.query.avp,
+        vp: req.query.vp,
+        as: req.query.as,
+        agm: req.query.agm,
+        gm: req.query.gm,
+        vertical: req.query.vertical,
+        startDate: req.query.startDate,
+        endDate: req.query.endDate,
+        sortBy: req.query.sortBy || 'createdAt',
+        sortOrder: req.query.sortOrder || 'desc'
+    };
+    return service.getNewBooking(queryParams, req.user)
+        .then((result) => responseHandler.success(res, result, "New Booking list retrieved successfully!", 200))
+        .catch((error) => responseHandler.error(res, error, error.message, 500));
+}
+
 exports.getUpcomingBooking = (req, res) => {
  const queryParams = {
         page: parseInt(req.query.page) || 1,

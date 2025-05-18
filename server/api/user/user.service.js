@@ -123,7 +123,8 @@ exports.createAdminWithCompany = async ({companyData, userData, ipaddress},user)
   }
 }
 
-exports.createSupportUser = async ({name, email, role, password,phone,isActive,assignedTL,assignedAS,assignedAGM,assignedGM,assignedAVP,assignedVP,assignedVertical }, user) => {
+exports.createSupportUser = async ({name, email, role, password,phone,isActive,assignedTL,assignedAS,assignedAGM,assignedGM,
+  assignedAVP,assignedVP,assignedVertical,bookingStatus }, user) => {
   try {   
     let emailExists = await UserModel.find({ email }).lean()
     if (emailExists.length) throw 'Email already exists!'
@@ -142,6 +143,7 @@ exports.createSupportUser = async ({name, email, role, password,phone,isActive,a
       assignedGM,
       assignedAVP,
       assignedVP,
+      bookingStatus:bookingStatus,
       assignedVertical,
       isActive,
       hashedPassword: getHashedPassword(randPassword, userSalt),
@@ -157,6 +159,7 @@ exports.createSupportUser = async ({name, email, role, password,phone,isActive,a
       _id: createdUser._id,
       phone: createdUser.phone,
       isActive:createdUser.isActive,
+      bookingStatus:createdUser.bookingStatus,
       isPrime: createdUser.isPrime,
       isEmailVerified:createdUser.isEmailVerified,
       isMobileVerified:createdUser.isMobileVerified,
@@ -192,7 +195,7 @@ exports.updateMe= async ({name,bio},user)=>{
 }
 
 exports.updateDepartment = async (contentId, { name, bio, isActive, assignedTL,assignedAS, assignedAGM, assignedGM,assignedAVP,
-      assignedVP,assignedVertical, password, email, phone }, user) => {
+      assignedVP,assignedVertical, password, email, phone,bookingStatus }, user) => {
   try {
       // First check if user exists
       const existingUser = await UserModel.findById(contentId);
@@ -229,6 +232,7 @@ exports.updateDepartment = async (contentId, { name, bio, isActive, assignedTL,a
           ...(name && { name }),
           ...(bio && { bio }),
           ...(isActive !== undefined && { isActive }),
+           ...(bookingStatus !== undefined && { bookingStatus }),
           ...(assignedTL && { assignedTL }),
           ...(assignedAS && { assignedAS }),
           ...(assignedAGM && { assignedAGM }),
@@ -498,6 +502,13 @@ exports.listUsers = async ({ }, user) => {
         email: 1,
         role: 1,
         assignedTL: 1,
+        assignedAS:1,
+        assignedAGM:1,
+        assignedGM:1,
+        assignedAVP:1,
+        assignedVP:1,
+        assignedVertical:1,
+        bookingStatus:1,
         companyId: 1,
         phone: 1,
         isEmailVerified: 1,

@@ -76,6 +76,7 @@ exports.getAllTypes = async ({}, user) => {
       })
       .select('name role')
       .lean()
+      .sort({ name: 1 }) // Sort by name
 
     // Fetch all products and services for the company
     const productsServices = await productServiceModel
@@ -86,6 +87,7 @@ exports.getAllTypes = async ({}, user) => {
       })
       .select('name')
       .lean()
+      .sort({ name: 1 }) // Sort by name
 
     // Fetch all Lead Lose Reason for the company
     const leadLoseReason = await leadLoseReasonModel

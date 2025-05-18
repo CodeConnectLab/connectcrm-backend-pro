@@ -12,6 +12,7 @@ const XLSX = require('xlsx');
 const PDFDocument = require('pdfkit');
 const GeoLocationModel = require('../geoLocation/geoLocation.model');
 const userRoles = require('../../config/constants/userRoles')
+const BookingModel = require('../booking/booking.model');
 ////////  lead Save 
 exports.createLeadByCompany = async (res,data, user) => {
     try {
@@ -567,8 +568,8 @@ exports.getAllImportedLeadsByCompany = async ({leadAccessFilter},params, user) =
             productService,
             startDate,
             endDate,
-            sortBy = 'followUpDate',
-            sortOrder = 'asc'
+            sortBy = 'createdAt',
+            sortOrder = 'desc'
         } = params;
 
         const data = await getAllImportedLeadsByCompanyWithPagination(
@@ -941,7 +942,7 @@ const getAllOutsourcedLeadsByCompanyWithPagination = async (
 ///////////  Lead Update 
 exports.getLeadUpdate = async (id, data, user) => {
     try {
-        // Check if lead exists and belongs to company
+          // Check if lead exists and belongs to company
         const existingLead = await Lead.findOne({
             _id: id,
             companyId: user.companyId,
@@ -1013,6 +1014,47 @@ exports.getLeadUpdate = async (id, data, user) => {
             },
             { new: true },
         );
+        
+          ////// get lead won/close status
+        const leadStatus = await LeadStatus.findOne({
+           companyId: user.companyId,
+           wonStatus: true,
+        });
+        if (leadStatus) {
+            const leadStatusId = leadStatus._id;
+            
+
+            ///////// check if lead status is won/close
+            if (data.leadStatus.toString() === leadStatusId.toString()) {
+               //////// add booking this lead with pending status
+               const booking = await BookingModel.create({
+                leadId: id,
+                companyId: user.companyId,
+                bookingStatus: 'pending',
+                bookingDate: new Date(),
+                createdBy: user._id,
+                updatedStatus:false,
+                customer:updatedLead?.firstName,
+                email:updatedLead?.email,
+                contactName:updatedLead?.firstName,
+                projectName:updatedLead?.productService,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                //  reference: {
+                //     employee: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+                //     tlcp: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+                //     avp: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+                //     vp: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+                //     as: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+                //     agm: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+                //     gm: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+                //     vertical: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+                //   },
+                
+               })
+
+            }
+        }
 
         ///  if leadstatus won then add booking this lead with pendding status  
 

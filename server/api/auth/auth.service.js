@@ -97,6 +97,7 @@ exports.logIn = async (res,{
             isEmailVerified: maybeUser.isEmailVerified || false,
             isMobileVerified: maybeUser.isMobileVerified || false,
             bio: maybeUser.bio,
+            bookingStatus:maybeUser?.bookingStatus,
             profilePic:maybeUser?.profilePic,
             fcmMobileToken:maybeUser?.fcmMobileToken,
             fcmWebToken:maybeUser?.fcmWebToken,

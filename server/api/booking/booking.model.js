@@ -15,7 +15,7 @@ const paymentSchema = new mongoose.Schema({
 const bookingSchema = new mongoose.Schema({
   customer: { type: String,  required: true },
   leadId: { type: mongoose.Schema.Types.ObjectId, ref: 'Lead', required: false },
-  projectName: { type: String, required: false },
+  projectName: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductService', required: false },
   email: { type: String, required: true },
   contactName: { type: String, required: false },
   bookingDate: { type: Date, required: true },
@@ -34,18 +34,32 @@ const bookingSchema = new mongoose.Schema({
     gm: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     vertical: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
   },
+  /////// payment details of booking project
   paymentDetails: [paymentSchema],
   BSP: { type: Number, required: true,default: 0 },
   GST: { type: Number, required: true,default: 0 },
   OtherCharges: { type: Number, default: 0 },
+  OtherGST: { type: Number, default: 0 },
+  PCL: { type: Number, required: true,default: 0 },
+  PCLGST: { type: Number, required: true,default: 0 },
   TSP: { type: Number, required: true ,default: 0},
   totalReceived: { type: Number, default: 0 },
+  //////chanel partner
+  GrossRevenue: { type: Number, default: 0 },
+  CpRevenue: { type: Number, default: 0 },
+  Discount: { type: Number, default: 0 },
   netRevenue: { type: Number, default: 0 },
+
+
   remark: { type: String },
   bookingStatus: {
     type: String,
     enum: ['pending', 'confirmed', 'cancelled'],
     default: 'confirmed'
+  },
+  updatedStatus:{
+    type:Boolean,
+    default: false
   },
   companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'company', required: true },
 }, { timestamps: true });

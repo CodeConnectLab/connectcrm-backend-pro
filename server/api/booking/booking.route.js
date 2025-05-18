@@ -36,7 +36,9 @@ router.get(usersVersion + "/get-booking-list",
 router.get(usersVersion + "/get-upcomming-booking",
     auth.isAuthenticated({
   }),
-    controller.getUpcomingBooking);    
+    controller.getUpcomingBooking);   
+    
+    
 
 /////// Get Booking details By ID
 router.get(usersVersion + "/get-booking-details/:id",
@@ -50,6 +52,14 @@ router.get(usersVersion + "/booking-overview",
     auth.isAuthenticated({
   }),
     controller.getBookingOverview);   
+
+    //////////// new booking api
+router.get(usersVersion + "/new-booking",
+    auth.isAuthenticated({
+      }),
+    controller.getNewBooking);   
+
+    //////////// booking history api
 
 
 

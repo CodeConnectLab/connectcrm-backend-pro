@@ -20,6 +20,14 @@ exports.addBooking = async (body, user, res) => {
             OtherCharges,
             TSP,
             totalReceived,
+            OtherGST,
+            PCL,
+            PCLGST,
+            GrossRevenue,
+            CpRevenue,
+            Discount,
+
+
             netRevenue,
             remark,
             bookingStatus,
@@ -46,6 +54,13 @@ exports.addBooking = async (body, user, res) => {
             OtherCharges,
             TSP,
             totalReceived,
+            OtherGST,
+            updatedStatus:true,
+            PCL,
+            PCLGST,
+            GrossRevenue,
+            CpRevenue,
+            Discount,
             netRevenue,
             remark,
             bookingStatus,
@@ -64,7 +79,8 @@ exports.updateBooking = async (bookingId, body, user) => {
     try {
         const { customer, projectName, email, contactName, bookingDate,
             RM, unit, size, reference, paymentDetails, BSP, GST,
-            OtherCharges, TSP, totalReceived, netRevenue, remark,
+            OtherCharges, TSP, totalReceived,OtherGST,PCL,PCLGST,
+            GrossRevenue,CpRevenue,Discount,netRevenue, remark,
             bookingStatus } = body;
         const updatedBooking = await BookingModel.findOneAndUpdate(
             { _id: bookingId, companyId: user.companyId },
@@ -81,9 +97,16 @@ exports.updateBooking = async (bookingId, body, user) => {
                 paymentDetails,
                 BSP,
                 GST,
+                updatedStatus:true,
                 OtherCharges,
                 TSP,
                 totalReceived,
+                OtherGST,
+                PCL,
+                PCLGST,
+                GrossRevenue,
+                CpRevenue,
+                Discount,
                 netRevenue,
                 remark,
                 bookingStatus
@@ -126,7 +149,47 @@ exports.getBookingList = async (queryParams, user) => {
             page, limit, sortBy, sortOrder, search, startDate, endDate, ...references
         } = queryParams;
 
-        const query = { companyId: user.companyId };
+        const query = { companyId: user.companyId ,updatedStatus:true };
+
+        if (search) {
+            query.$or = [
+                { customer: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } },
+                { contactName: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        if (startDate && endDate) {
+            query.bookingDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
+        }
+
+        for (const key in references) {
+            if (references[key]) {
+                query[`reference.${key}`] = references[key];
+            }
+        }
+
+        const options = {
+            page,
+            limit,
+            sort: { [sortBy]: sortOrder === 'asc' ? 1 : -1 }
+        };
+        //////////// add populate and project
+        const bookings = await BookingModel.paginate(query, options);
+        return bookings;
+    } catch (error) {
+        throw new Error('Error fetching bookings: ' + error.message);
+    }
+};
+
+////  new booking
+exports.getNewBooking = async (queryParams, user) => {
+    try {
+        const {
+            page, limit, sortBy, sortOrder, search, startDate, endDate, ...references
+        } = queryParams;
+
+        const query = { companyId: user.companyId ,updatedStatus:false };
 
         if (search) {
             query.$or = [

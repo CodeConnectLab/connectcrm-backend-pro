@@ -45,6 +45,11 @@ const UserSchema = new Schema({
     ref: "User",
     required: false
   },
+  bookingStatus:{
+    type: Boolean,
+    default: false
+  },
+
 
 
   assignedAS: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

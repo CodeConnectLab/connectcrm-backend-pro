@@ -57,6 +57,7 @@ exports.createSupportUser = {
     assignedAVP: Joi.string().allow('', null).optional(),
     assignedVP: Joi.string().allow('', null).optional(),
     assignedVertical: Joi.string().allow('', null).optional(),
+    bookingStatus: Joi.boolean().optional(),
 
   })
 }
@@ -84,6 +85,7 @@ exports.updateMe={
     assignedAVP: Joi.string().allow('', null).optional(),
     assignedVP: Joi.string().allow('', null).optional(),
     assignedVertical: Joi.string().allow('', null).optional(),
+     bookingStatus: Joi.boolean().optional(),
   }).min(1)
 }
 
