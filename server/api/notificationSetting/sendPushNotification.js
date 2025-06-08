@@ -59,9 +59,9 @@ async function processFollowUpNotification(notification) {
       // if (diffInMinutes === notification.time || diffInMinutes<notification.time || diffInMinutes==0) {
       //   await sendNotificationsForLead(notification, lead);
       // }
-      //if (diffInMinutes === notification.time || diffInMinutes==0) {
+      if (diffInMinutes === notification.time || diffInMinutes==0) {
         await sendNotificationsForLead(notification, lead);
-     // }
+      }
     }
   } catch (error) {
     console.error('Error processing follow-up notification:', error);
