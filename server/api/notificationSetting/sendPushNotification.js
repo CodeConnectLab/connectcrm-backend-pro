@@ -7,7 +7,6 @@ const cron = require('node-cron');
 const Modelnotification=require('./notification.model')
 
 
-
 const serviceAccount = {
   type: process.env.GOOGLE_TYPE,
   project_id: process.env.GOOGLE_PROJECT_ID,
@@ -36,21 +35,23 @@ let scheduledTasks = new Map();
 async function processFollowUpNotification(notification) {
   try {
     const currentTime = moment();
-
+     console.log('Current time:',currentTime.toDate() );
+    // console.log('Current time1:',moment(currentTime).add(1, 'days').toDate());
     // Find leads matching the notification's status and having followUpDate
     const leads = await LeadModel.find({
       leadStatus: notification.statusId,
       followUpDate: { 
         $exists: true,
-        $gte: currentTime.toDate() // Only get dates greater than current time
+        $gte: currentTime.toDate(), // Only get dates greater than current time
+        $lte: moment(currentTime).add(1, 'days').toDate() // Only get dates within the next 24 hours
       }
      // assignedAgent: { $exists: true }  // Only leads with assigned agents
     }).populate('assignedAgent'); // Populate assigned agent details
 
-    //console.log(`Found ${leads.length} leads for status ${notification.statusId}`);
+    console.log(`Found ${leads.length} leads for status ${notification.statusId}`);
 
     for (const lead of leads) {
-
+  //  console.log(`Processing lead ${lead._id} for notification ${notification._id}`);
       const followUpTime = moment(lead.followUpDate);
       const diffInMinutes = followUpTime.diff(currentTime, 'minutes');
       //console.log('diffInMinutes',notification.time,diffInMinutes,followUpTime)
@@ -71,7 +72,7 @@ async function sendNotificationsForLead(notification, lead) {
   try {
     // Get recipient users based on settings
     const users = await getRecipientUsers(notification, lead);
-     //console.log(`Found ${users.length} recipients for lead ${lead._id}`);
+     console.log(`Found ${users.length} recipients for lead ${lead._id}`);
 
     // Send notifications to each user
     for (const user of users) {
