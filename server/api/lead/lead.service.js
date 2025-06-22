@@ -187,7 +187,7 @@ exports.getAllLeadsByCompany = async ({leadAccessFilter},params, user) => {
             startDate,
             endDate,
             sortBy = 'createdAt',
-            sortOrder = 'asc'
+            sortOrder = 'desc'
         } = params;
         
         // Ensure page and limit are valid numbers

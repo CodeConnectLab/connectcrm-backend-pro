@@ -3,12 +3,19 @@ const {userRoles} = require('../config/constants');
 
 const roleToField = {
   [userRoles.VERTICAL]: 'assignedVertical',
-  [userRoles.AS]: 'assignedAS',
+  [userRoles.AD]: 'assignedAD',
   [userRoles.VP]: 'assignedVP',
   [userRoles.AVP]: 'assignedAVP',
   [userRoles.GM]: 'assignedGM',
   [userRoles.AGM]: 'assignedAGM',
-  [userRoles.TEAM_ADMIN]: 'assignedTL'
+  [userRoles.TEAM_ADMIN]: 'assignedTL',
+  ////new added
+  [userRoles.SR_PORTFOLIO_MANAGER]: 'assignedSRPORTFOLIOMANAGER',
+  [userRoles.PORTFOLIO_MANAGER]: 'assignedPORTFOLIOMANAGER',
+  [userRoles.AS_PORTFOLIO_MANAGER]: 'assignedASPORTFOLIOMANAGER',
+  [userRoles.SR_BDE]: 'assignedSRBDE',
+  [userRoles.BDE]: 'assignedBDE',
+
 };
 
 const getAllChildUserIds1 = async (userId, role) => {

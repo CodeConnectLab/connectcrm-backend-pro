@@ -23,8 +23,8 @@ const UserSchema = new Schema({
   role: {
     type: String,
     required: true,
-    // enum: ['Super Admin', 'Employee', 'Team Leader'],
-    enum: ['Super Admin', 'Vertical', 'AS', 'VP', 'AVP', 'GM', 'AGM', 'Team Leader', 'Employee'],
+    enum: ['Super Admin', 'Vertical', 'AD', 'VP', 'AVP', 'GM', 'AGM', 'Team Leader', 'Sr. Portfolio Manager',
+      'Portfolio Manager','As. Portfolio Manager','Sr. BDE','BDE', 'Employee'],
     default: 'Employee'
   },
   companyId: {
@@ -52,13 +52,18 @@ const UserSchema = new Schema({
 
 
 
-  assignedAS: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  assignedAD: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   assignedAGM: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   assignedGM: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   assignedAVP: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   assignedVP: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   assignedVertical: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-
+  //////// add new again
+ assignedSRPORTFOLIOMANAGER: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  assignedPORTFOLIOMANAGER: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+   assignedASPORTFOLIOMANAGER: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    assignedSRBDE: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+     assignedBDE: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
   resetPasswordToken: {
     type: String

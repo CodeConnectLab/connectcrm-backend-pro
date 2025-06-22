@@ -25,8 +25,8 @@ exports.getAllByCompany = (req, res) => {
       productService: req.query.productService,
       startDate: req.query.startDate,
       endDate: req.query.endDate,
-      sortBy: 'updatedAt',
-      sortOrder: 'asc', 
+      sortBy: 'createdAt',
+      sortOrder: 'desc'
     };
   
     return service.getAllLeadsByCompany({ leadAccessFilter: req.leadAccessFilter }, queryParams, req.user)

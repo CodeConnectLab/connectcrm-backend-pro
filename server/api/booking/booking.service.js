@@ -127,6 +127,13 @@ exports.getBookingDetails = async (bookingId, user) => {
             // .populate('unit', 'unitName')
             // .populate('size', 'sizeName')
             .populate('reference.employee', 'name')
+
+            .populate('reference.SR_PORTFOLIO_MANAGER', 'name')
+            .populate('reference.PORTFOLIO_MANAGER', 'name')
+            .populate('reference.AS_PORTFOLIO_MANAGER', 'name')
+            .populate('reference.SR_BDE', 'name')
+            .populate('reference.BDE', 'name')
+
             .populate('reference.tlcp', 'name')
             .populate('reference.avp', 'name')
             .populate('reference.vp', 'name')
@@ -373,6 +380,14 @@ exports.getUpcomingBooking = async (queryParams, user) => {
             // Populate references for each booking
             bookings.docs = await BookingModel.populate(bookings.docs, [
                 { path: 'reference.employee', select: 'name' },
+
+                { path: 'reference.SR_PORTFOLIO_MANAGER', select: 'name' },
+                { path: 'reference.PORTFOLIO_MANAGER', select: 'name' },
+                { path: 'reference.AS_PORTFOLIO_MANAGER', select: 'name' },
+                { path: 'reference.SR_BDE', select: 'name' },
+                { path: 'reference.BDE', select: 'name' },
+
+                
                 { path: 'reference.tlcp', select: 'name' },
                 { path: 'reference.avp', select: 'name' },
                 { path: 'reference.vp', select: 'name' },

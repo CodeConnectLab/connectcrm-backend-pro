@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
+const { SR_PORTFOLIO_MANAGER } = require('../../config/constants/userRoles');
 
 
 const paymentSchema = new mongoose.Schema({
@@ -26,10 +27,18 @@ const bookingSchema = new mongoose.Schema({
 //   size: { type: mongoose.Schema.Types.ObjectId, ref: 'Size', required: false },
   reference: {
     employee: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    
+    SR_PORTFOLIO_MANAGER: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    PORTFOLIO_MANAGER: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    AS_PORTFOLIO_MANAGER: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    SR_BDE: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    BDE: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+
+
     tlcp: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     avp: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     vp: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    as: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    ad: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     agm: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     gm: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     vertical: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }

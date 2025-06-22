@@ -38,7 +38,14 @@ exports.createSupportUser = {
     role: Joi.string().required().valid(
       USER_ROLES.USER,
       USER_ROLES.TEAM_ADMIN,
-      USER_ROLES.AS,
+
+      USER_ROLES.SR_PORTFOLIO_MANAGER,
+      USER_ROLES.PORTFOLIO_MANAGER,
+      USER_ROLES.AS_PORTFOLIO_MANAGER,
+      USER_ROLES.SR_BDE,
+      USER_ROLES.BDE,
+      USER_ROLES.AD,
+      
       USER_ROLES.AGM,
       USER_ROLES.GM,
       USER_ROLES.AVP,
@@ -51,13 +58,25 @@ exports.createSupportUser = {
     isActive:Joi.boolean().allow(null),
     assignedTL: Joi.string().allow('', null).optional(),
    ///// new added
-    assignedAS: Joi.string().allow('', null).optional(),
+    assignedAD: Joi.string().allow('', null).optional(),
     assignedAGM: Joi.string().allow('', null).optional(),
     assignedGM: Joi.string().allow('', null).optional(),
     assignedAVP: Joi.string().allow('', null).optional(),
     assignedVP: Joi.string().allow('', null).optional(),
     assignedVertical: Joi.string().allow('', null).optional(),
+
+    /////// new added again
+    assignedSRPORTFOLIOMANAGER:Joi.string().allow('', null).optional(),
+    assignedPORTFOLIOMANAGER:Joi.string().allow('', null).optional(),
+    assignedASPORTFOLIOMANAGER:Joi.string().allow('', null).optional(),
+    assignedSRBDE:Joi.string().allow('', null).optional(),
+    assignedBDE:Joi.string().allow('', null).optional(),
+    
+
     bookingStatus: Joi.boolean().optional(),
+
+    //////// new added again
+    
 
   })
 }
@@ -79,12 +98,18 @@ exports.updateMe={
      //assignedTL: Joi.string().allow('', null).hex().length(24).optional(), // MongoDB ObjectId validation
      assignedTL: Joi.string().allow('', null).optional(),
    ///// new added
-    assignedAS: Joi.string().allow('', null).optional(),
+    assignedAD: Joi.string().allow('', null).optional(),
     assignedAGM: Joi.string().allow('', null).optional(),
     assignedGM: Joi.string().allow('', null).optional(),
     assignedAVP: Joi.string().allow('', null).optional(),
     assignedVP: Joi.string().allow('', null).optional(),
     assignedVertical: Joi.string().allow('', null).optional(),
+      /////// new added again
+    assignedSRPORTFOLIOMANAGER:Joi.string().allow('', null).optional(),
+    assignedPORTFOLIOMANAGER:Joi.string().allow('', null).optional(),
+    assignedASPORTFOLIOMANAGER:Joi.string().allow('', null).optional(),
+    assignedSRBDE:Joi.string().allow('', null).optional(),
+    assignedBDE:Joi.string().allow('', null).optional(),
      bookingStatus: Joi.boolean().optional(),
   }).min(1)
 }

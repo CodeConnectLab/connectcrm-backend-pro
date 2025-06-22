@@ -123,12 +123,18 @@ exports.createAdminWithCompany = async ({companyData, userData, ipaddress},user)
   }
 }
 
-exports.createSupportUser = async ({name, email, role, password,phone,isActive,assignedTL,assignedAS,assignedAGM,assignedGM,
-  assignedAVP,assignedVP,assignedVertical,bookingStatus }, user) => {
-  try {   
+exports.createSupportUser = async ({ name, email, role, password, phone, isActive, assignedTL,
+  assignedSRPORTFOLIOMANAGER,
+  assignedPORTFOLIOMANAGER,
+  assignedASPORTFOLIOMANAGER,
+  assignedSRBDE,
+  assignedBDE,
+  assignedAD, assignedAGM, assignedGM,
+  assignedAVP, assignedVP, assignedVertical, bookingStatus }, user) => {
+  try {
     let emailExists = await UserModel.find({ email }).lean()
     if (emailExists.length) throw 'Email already exists!'
-     let phoneExists = await UserModel.find({ phone }).lean()
+    let phoneExists = await UserModel.find({ phone }).lean()
     if (phoneExists.length) throw 'Phone already exists!'
     let randPassword = password || generatePassword()
     let userSalt = generateSalt()
@@ -138,18 +144,24 @@ exports.createSupportUser = async ({name, email, role, password,phone,isActive,a
       role: role,
       phone,
       assignedTL,
-      assignedAS,
+      assignedSRPORTFOLIOMANAGER,
+      assignedPORTFOLIOMANAGER,
+      assignedASPORTFOLIOMANAGER,
+      assignedSRBDE,
+      assignedBDE,
+
+      assignedAD,
       assignedAGM,
       assignedGM,
       assignedAVP,
       assignedVP,
-      bookingStatus:bookingStatus,
+      bookingStatus: bookingStatus,
       assignedVertical,
       isActive,
       hashedPassword: getHashedPassword(randPassword, userSalt),
       passowrdExpiry: new Date(new Date().setDate(new Date().getDate() + 10)),
       hashSalt: userSalt,
-      companyId:user.companyId
+      companyId: user.companyId
       // activities: activityService.getActivityForRole(USER_ROLES.SUPPORT_ADMIN)
     })
     return {
@@ -158,12 +170,12 @@ exports.createSupportUser = async ({name, email, role, password,phone,isActive,a
       role: createdUser.role,
       _id: createdUser._id,
       phone: createdUser.phone,
-      isActive:createdUser.isActive,
-      bookingStatus:createdUser.bookingStatus,
+      isActive: createdUser.isActive,
+      bookingStatus: createdUser.bookingStatus,
       isPrime: createdUser.isPrime,
-      isEmailVerified:createdUser.isEmailVerified,
-      isMobileVerified:createdUser.isMobileVerified,
-      profilePic:'https://crm.codeconnect.in/',
+      isEmailVerified: createdUser.isEmailVerified,
+      isMobileVerified: createdUser.isMobileVerified,
+      profilePic: 'https://crm.codeconnect.in/',
     }
   } catch (error) {
     return Promise.reject(error)
@@ -194,83 +206,91 @@ exports.updateMe= async ({name,bio},user)=>{
     select: '-hashedPassword -hashSalt -otp -otpExpiry -resetPasswordToken'});
 }
 
-exports.updateDepartment = async (contentId, { name, bio, isActive, assignedTL,assignedAS, assignedAGM, assignedGM,assignedAVP,
-      assignedVP,assignedVertical, password, email, phone,bookingStatus }, user) => {
+exports.updateDepartment = async (contentId, { name, bio, isActive,
+  assignedSRPORTFOLIOMANAGER, assignedPORTFOLIOMANAGER, assignedASPORTFOLIOMANAGER, assignedSRBDE, assignedBDE,
+  assignedTL, assignedAD,
+  assignedAGM, assignedGM, assignedAVP,
+  assignedVP, assignedVertical, password, email, phone, bookingStatus }, user) => {
   try {
-      // First check if user exists
-      const existingUser = await UserModel.findById(contentId);
-      if (!existingUser) {
-          throw new Error('User not found');
+    // First check if user exists
+    const existingUser = await UserModel.findById(contentId);
+    if (!existingUser) {
+      throw new Error('User not found');
+    }
+
+    // Check email uniqueness only if email is being updated
+    if (email && email !== existingUser.email) {
+      const emailExists = await UserModel.findOne({
+        email,
+        _id: { $ne: contentId }  // Exclude current user from check
+      }).lean();
+
+      if (emailExists) {
+        throw new Error('Email already exists for another user!');
       }
+    }
 
-      // Check email uniqueness only if email is being updated
-      if (email && email !== existingUser.email) {
-          const emailExists = await UserModel.findOne({ 
-              email,
-              _id: { $ne: contentId }  // Exclude current user from check
-          }).lean();
-          
-          if (emailExists) {
-              throw new Error('Email already exists for another user!');
-          }
+    // Check phone uniqueness only if phone is being updated
+    if (phone && phone !== existingUser.phone) {
+      const phoneExists = await UserModel.findOne({
+        phone,
+        _id: { $ne: contentId }  // Exclude current user from check
+      }).lean();
+
+      if (phoneExists) {
+        throw new Error('Phone number already exists for another user!');
       }
+    }
 
-      // Check phone uniqueness only if phone is being updated
-      if (phone && phone !== existingUser.phone) {
-          const phoneExists = await UserModel.findOne({ 
-              phone,
-              _id: { $ne: contentId }  // Exclude current user from check
-          }).lean();
-          
-          if (phoneExists) {
-              throw new Error('Phone number already exists for another user!');
-          }
+    // Prepare update data
+    const updateData = {
+      ...(name && { name }),
+      ...(bio && { bio }),
+      ...(isActive !== undefined && { isActive }),
+      ...(bookingStatus !== undefined && { bookingStatus }),
+      ...(assignedSRPORTFOLIOMANAGER && { assignedSRPORTFOLIOMANAGER }),
+      ...(assignedPORTFOLIOMANAGER && { assignedPORTFOLIOMANAGER }),
+      ...(assignedASPORTFOLIOMANAGER && { assignedASPORTFOLIOMANAGER }),
+      ...(assignedSRBDE && { assignedSRBDE }),
+      ...(assignedBDE && { assignedBDE }),
+      ...(assignedTL && { assignedTL }),
+      ...(assignedAD && { assignedAD }),
+      ...(assignedAGM && { assignedAGM }),
+      ...(assignedGM && { assignedGM }),
+      ...(assignedAVP && { assignedAVP }),
+      ...(assignedVP && { assignedVP }),
+      ...(assignedVertical && { assignedVertical }),
+      ...(email && { email }),
+      ...(phone && { phone })
+    };
+
+    // Handle password update if provided
+    if (password) {
+      const userSalt = generateSalt();
+      updateData.hashedPassword = getHashedPassword(password, userSalt);
+      updateData.hashSalt = userSalt;
+      updateData.passwordExpiry = new Date(new Date().setDate(new Date().getDate() + 10));
+    }
+
+    // Update user with validated fields using contentId
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      contentId,  // Using contentId instead of user._id
+      { $set: updateData },
+      {
+        new: true,
+        select: '-hashedPassword -hashSalt -otp -otpExpiry -resetPasswordToken',
+        runValidators: true
       }
+    );
 
-      // Prepare update data
-      const updateData = {
-          ...(name && { name }),
-          ...(bio && { bio }),
-          ...(isActive !== undefined && { isActive }),
-           ...(bookingStatus !== undefined && { bookingStatus }),
-          ...(assignedTL && { assignedTL }),
-          ...(assignedAS && { assignedAS }),
-          ...(assignedAGM && { assignedAGM }),
-          ...(assignedGM && { assignedGM }),
-          ...(assignedAVP && { assignedAVP }),
-          ...(assignedVP && { assignedVP }),
-          ...(assignedVertical && { assignedVertical }),
-          ...(email && { email }),
-          ...(phone && { phone })
-      };
+    if (!updatedUser) {
+      throw new Error('Error updating user');
+    }
 
-      // Handle password update if provided
-      if (password) {
-          const userSalt = generateSalt();
-          updateData.hashedPassword = getHashedPassword(password, userSalt);
-          updateData.hashSalt = userSalt;
-          updateData.passwordExpiry = new Date(new Date().setDate(new Date().getDate() + 10));
-      }
-
-      // Update user with validated fields using contentId
-      const updatedUser = await UserModel.findByIdAndUpdate(
-          contentId,  // Using contentId instead of user._id
-          { $set: updateData },
-          {
-              new: true,
-              select: '-hashedPassword -hashSalt -otp -otpExpiry -resetPasswordToken',
-              runValidators: true
-          }
-      );
-
-      if (!updatedUser) {
-          throw new Error('Error updating user');
-      }
-
-      return updatedUser;
+    return updatedUser;
 
   } catch (error) {
-      throw error.message || 'Error updating user';
+    throw error.message || 'Error updating user';
   }
 };
 
@@ -457,7 +477,7 @@ exports.updateDeviceToken = async({fcmWebToken, fcmMobileToken}, user) => {
 /////////// get User Tree
 // Role Hierarchy
 const ROLE_HIERARCHY = [
-  'USER', 'TEAM_ADMIN', 'AGM', 'GM', 'AVP', 'VP', 'AS', 'VERTICAL'
+  'USER', 'BDE', 'SR_BDE','AS_PORTFOLIO_MANAGER','PORTFOLIO_MANAGER','SR_PORTFOLIO_MANAGER', 'TEAM_ADMIN', 'AGM', 'GM', 'AVP', 'VP', 'AD', 'VERTICAL'
 ];
 ///https://connectcrm-frontend-pro.vercel.app/booking/add-booking
 exports.getUserTree = async (userId, user) => {
@@ -502,7 +522,12 @@ exports.listUsers = async ({ }, user) => {
         email: 1,
         role: 1,
         assignedTL: 1,
-        assignedAS:1,
+        assignedSRPORTFOLIOMANAGER: 1,
+        assignedPORTFOLIOMANAGER: 1,
+        assignedASPORTFOLIOMANAGER: 1,
+        assignedSRBDE: 1,
+        assignedBDE: 1,
+        assignedAD:1,
         assignedAGM:1,
         assignedGM:1,
         assignedAVP:1,
