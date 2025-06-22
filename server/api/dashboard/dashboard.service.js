@@ -502,6 +502,7 @@ const leadSourceMetricsss = async (start, end, user) => {
       {
         $match: {
           companyId: user.companyId,
+          assignedAgent: user._id,
          /// createdAt: { $gte: start, $lte: end }
         }
       },
