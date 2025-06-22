@@ -134,14 +134,14 @@ exports.createSupportUser = async (res,{ name, email, role, password, phone, isA
   try {
     let emailExists = await UserModel.find({ email }).lean()
 
-     if (!emailExists.length){
-          return res.status(500).json({ message: 'Email already exists!' });
+     if (emailExists.length){
+          return res.status(500).json({ message: 'Email already exists!', error:true });
         }
     // if (emailExists.length) throw 'Email already exists!'
     let phoneExists = await UserModel.find({ phone }).lean()
     // if (phoneExists.length) throw 'Phone already exists!'
-    if (!phoneExists.length){
-          return res.status(500).json({ message: 'Phone already exists!' });
+    if (phoneExists.length){
+          return res.status(500).json({ message: 'Phone already exists!', error:true });
         }
     let randPassword = password || generatePassword()
     let userSalt = generateSalt()
