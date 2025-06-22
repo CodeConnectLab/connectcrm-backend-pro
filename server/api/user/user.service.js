@@ -123,7 +123,7 @@ exports.createAdminWithCompany = async ({companyData, userData, ipaddress},user)
   }
 }
 
-exports.createSupportUser = async ({ name, email, role, password, phone, isActive, assignedTL,
+exports.createSupportUser = async (res,{ name, email, role, password, phone, isActive, assignedTL,
   assignedSRPORTFOLIOMANAGER,
   assignedPORTFOLIOMANAGER,
   assignedASPORTFOLIOMANAGER,
@@ -133,9 +133,16 @@ exports.createSupportUser = async ({ name, email, role, password, phone, isActiv
   assignedAVP, assignedVP, assignedVertical, bookingStatus }, user) => {
   try {
     let emailExists = await UserModel.find({ email }).lean()
-    if (emailExists.length) throw 'Email already exists!'
+
+     if (!emailExists.length){
+          return res.status(500).json({ message: 'Email already exists!' });
+        }
+    // if (emailExists.length) throw 'Email already exists!'
     let phoneExists = await UserModel.find({ phone }).lean()
-    if (phoneExists.length) throw 'Phone already exists!'
+    // if (phoneExists.length) throw 'Phone already exists!'
+    if (!phoneExists.length){
+          return res.status(500).json({ message: 'Phone already exists!' });
+        }
     let randPassword = password || generatePassword()
     let userSalt = generateSalt()
     let createdUser = await UserModel.create({

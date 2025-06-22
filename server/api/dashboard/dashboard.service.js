@@ -495,71 +495,66 @@ const calculateSalesMetrics = async (user) => {
     throw new Error('Failed to calculate sales metrics')
   }
 }
-
 const leadSourceMetricsss = async (start, end, user) => {
-  
+    const match = {
+        companyId: user.companyId
+    };
+
+    if (user.role !== userRoles.SUPER_ADMIN) {
+        match.assignedAgent = user._id;
+    }
+
     const leadSourceStats = await LeadModel.aggregate([
-      {
-        $match: {
-          companyId: user.companyId,
-          assignedAgent: user._id,
-         /// createdAt: { $gte: start, $lte: end }
+        { $match: match },
+        {
+            $lookup: {
+                from: 'leadsources',
+                localField: 'leadSource',
+                foreignField: '_id',
+                as: 'sourceInfo'
+            }
+        },
+        { $unwind: '$sourceInfo' },
+        {
+            $group: {
+                _id: {
+                    sourceId: '$sourceInfo._id',
+                    sourceName: '$sourceInfo.name',
+                    color: '$sourceInfo.color'
+                },
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                name: '$_id.sourceName',
+                color: '$_id.color',
+                value: '$count'
+            }
         }
-      },
-      {
-        $lookup: {
-          from: 'leadsources',
-          localField: 'leadSource',
-          foreignField: '_id',
-          as: 'sourceInfo'
-        }
-      },
-      {
-        $unwind: '$sourceInfo'
-      },
-      {  ////for group for setup value         
-        $group: {
-          _id: {
-            sourceId: '$sourceInfo._id',
-            sourceName: '$sourceInfo.name',
-            color: '$sourceInfo.color'
-          },
-          count: { $sum: 1 }
-        }
-      },
-      {  ////for showup
-        $project: {
-          _id: 0,
-          name: '$_id.sourceName',
-          color: '$_id.color',
-          value: '$count'
-        }
-      }
     ]);
+
     const totalLeads = leadSourceStats.reduce((sum, source) => sum + source.value, 0);
     const predefinedColors = [
-      '#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#A133FF',
-      '#FFC300', '#FF5733', '#DAF7A6', '#C70039', '#900C3F',
-      '#581845', '#2ECC71', '#3498DB', '#9B59B6', '#F1C40F',
-      '#E74C3C', '#1ABC9C', '#2C3E50', '#16A085', '#8E44AD',
-      '#D35400', '#27AE60', '#2980B9', '#34495E', '#E67E22',
-      '#F39C12', '#BDC3C7', '#7F8C8D', '#95A5A6', '#ECF0F1'
+        '#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#A133FF',
+        '#FFC300', '#FF5733', '#DAF7A6', '#C70039', '#900C3F',
+        '#581845', '#2ECC71', '#3498DB', '#9B59B6', '#F1C40F',
+        '#E74C3C', '#1ABC9C', '#2C3E50', '#16A085', '#8E44AD',
+        '#D35400', '#27AE60', '#2980B9', '#34495E', '#E67E22',
+        '#F39C12', '#BDC3C7', '#7F8C8D', '#95A5A6', '#ECF0F1'
     ];
-    
-    return {
-     
-    
-        total: totalLeads,
-        sources: leadSourceStats.map((source, index) => ({ // Include index parameter
-          name: source.name,
-          value: source.value,
-          color: source.color || predefinedColors[index % predefinedColors.length], // Assign colors
-          percentage: ((source.value / totalLeads) * 100).toFixed(2)
-        }))
-    
-    };
-  };
 
+    return {
+        total: totalLeads,
+        sources: leadSourceStats.map((source, index) => ({
+            name: source.name,
+            value: source.value,
+            color: source.color || predefinedColors[index % predefinedColors.length],
+            percentage: totalLeads ? ((source.value / totalLeads) * 100).toFixed(2) : "0.00"
+        }))
+    };
+};
   const getPaymentsOverview = async (user) => {
     try {
       // Get current date info
