@@ -137,7 +137,7 @@ exports.getBookingDetails = async (bookingId, user) => {
             .populate('reference.tlcp', 'name')
             .populate('reference.avp', 'name')
             .populate('reference.vp', 'name')
-            .populate('reference.as', 'name')
+            .populate('reference.ad', 'name')
             .populate('reference.agm', 'name')
             .populate('reference.gm', 'name')
             .populate('reference.vertical', 'name');
