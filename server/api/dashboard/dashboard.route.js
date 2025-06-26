@@ -1,5 +1,7 @@
 'use strict'
 
+const leadAccessMiddleware = require('../../middleware/leadAccessMiddleware');
+
 const express = require('express'),
   { joiValidate } = require('../../helpers/apiValidation.helper'),
   controller = require('./dashboard.controller'),
@@ -29,6 +31,7 @@ router.get(
   auth.isAuthenticated({
     
   }),
+   leadAccessMiddleware,
   controller.getDashboardMetrics
 );
 

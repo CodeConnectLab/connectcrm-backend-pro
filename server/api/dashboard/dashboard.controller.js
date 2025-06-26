@@ -8,7 +8,7 @@ exports.getCalendarData = (req, res) => {
 
 
 exports.getDashboardMetrics = (req, res) => {
-    return service.getDashboardMetrics(req.query, req.user)
+    return service.getDashboardMetrics({ leadAccessFilter: req.leadAccessFilter },req.query, req.user)
         .then((result) => responseHandler.success(res, result, "Dashboard metrics fetched successfully!", 200))
         .catch((error) => responseHandler.error(res, error, error.message, 500));
 };

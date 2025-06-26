@@ -25,7 +25,7 @@ exports.getCalendarData=async({},user)=>{
 }
 
 
-exports.getDashboardMetrics = async (params, user) => {
+exports.getDashboardMetrics = async ({ leadAccessFilter },params, user) => {
     try {
       const { startDate, endDate } = params
 
@@ -37,13 +37,13 @@ exports.getDashboardMetrics = async (params, user) => {
       end.setUTCHours(23, 59, 59, 999)
       
 
-      const topMetrics = await topMetricss(start,end,user)
+      const topMetrics = await topMetricss(leadAccessFilter,start,end,user)
     
-      const activityMetrics= await activityMetricss(start,end,user)
+      const activityMetrics= await activityMetricss(leadAccessFilter,start,end,user)
       
       const performanceMetrics= await calculateSalesMetrics(user)
 
-      const leadSourceMetricss=await leadSourceMetricsss(start,end,user)
+      const leadSourceMetricss=await leadSourceMetricsss(leadAccessFilter,start,end,user)
 
       const paymentOverview=await getPaymentsOverview(user)
 
@@ -68,15 +68,16 @@ exports.getDashboardMetrics = async (params, user) => {
 };
 
 
-const topMetricss = async (start, end, user) => {
+const topMetricss = async (leadAccessFilter,start, end, user) => {
   // Base query for current period
   let baseQuery = {
-    companyId: user.companyId
-    // createdAt: { $gte: start, $lte: end }
+    companyId: user.companyId,
+    ...leadAccessFilter,    // createdAt: { $gte: start, $lte: end }
   }
   // Previous period query
   let previousQuery = {
     companyId: user.companyId,
+    ...leadAccessFilter,    // createdAt: { $gte: start, $lte: end }
     createdAt: {
       // $gte: registerdate,
       $lt: start
@@ -89,27 +90,27 @@ const topMetricss = async (start, end, user) => {
   // }
 
   // Add user filter based on role
-  if (user.role !== userRoles.SUPER_ADMIN) {
-    if (user.role === userRoles.TEAM_ADMIN) {
-      // For Team Leader - show their own data AND their team members' data
-      const query = {
-        $or: [
-          { assignedAgent: user._id }, // TL's own assignments
-          {
-            assignedAgent: {
-              $in: await UserModel.distinct('_id', { assignedTL: user._id })
-            }
-          } // Team members' assignments
-        ]
-      }
-      baseQuery = { ...baseQuery, ...query }
-      previousQuery = { ...previousQuery, ...query }
-    } else {
-      // For regular users - only show their own data
-      baseQuery.assignedAgent = user._id
-      previousQuery.assignedAgent = user._id
-    }
-  }
+  // if (user.role !== userRoles.SUPER_ADMIN) {
+  //   if (user.role === userRoles.TEAM_ADMIN) {
+  //     // For Team Leader - show their own data AND their team members' data
+  //     const query = {
+  //       $or: [
+  //         { assignedAgent: user._id }, // TL's own assignments
+  //         {
+  //           assignedAgent: {
+  //             $in: await UserModel.distinct('_id', { assignedTL: user._id })
+  //           }
+  //         } // Team members' assignments
+  //       ]
+  //     }
+  //     baseQuery = { ...baseQuery, ...query }
+  //     previousQuery = { ...previousQuery, ...query }
+  //   } else {
+  //     // For regular users - only show their own data
+  //     baseQuery.assignedAgent = user._id
+  //     previousQuery.assignedAgent = user._id
+  //   }
+  // }
 
   // Get followup status IDs
   const followupStatusIds = await LeadStatusModel.find({
@@ -220,7 +221,7 @@ const topMetricss = async (start, end, user) => {
   ])
 }
 
-const activityMetricss = async (start, end, user) => {
+const activityMetricss = async (leadAccessFilter,start, end, user) => {
   // Get all lead statuses with showDashboard: true
   const dashboardStatusList = await LeadStatusModel.find({
     companyId: user.companyId,
@@ -242,31 +243,32 @@ const activityMetricss = async (start, end, user) => {
 
   // Create base query based on user role
   let baseQuery = {
-    companyId: user.companyId
+    companyId: user.companyId,
+    ...leadAccessFilter,
   }
 
   // Add user filter based on role
-  if (user.role !== userRoles.SUPER_ADMIN) {
-    if (user.role === userRoles.TEAM_ADMIN) {
-      // For Team Leader - show their own data AND their team members' data
-      const query = {
-        $or: [
-          { assignedAgent: user._id }, // TL's own assignments
-          {
-            assignedAgent: {
-              $in: await UserModel.distinct('_id', { assignedTL: user._id })
-            }
-          } // Team members' assignments
-        ]
-      }
-      baseQuery = { ...baseQuery, ...query }
-     // previousQuery = { ...previousQuery, ...query }
-    } else {
-      // For regular users - only show their own data
-      baseQuery.assignedAgent = user._id
-     // previousQuery.assignedAgent = user._id
-    }
-  }
+  // if (user.role !== userRoles.SUPER_ADMIN) {
+  //   if (user.role === userRoles.TEAM_ADMIN) {
+  //     // For Team Leader - show their own data AND their team members' data
+  //     const query = {
+  //       $or: [
+  //         { assignedAgent: user._id }, // TL's own assignments
+  //         {
+  //           assignedAgent: {
+  //             $in: await UserModel.distinct('_id', { assignedTL: user._id })
+  //           }
+  //         } // Team members' assignments
+  //       ]
+  //     }
+  //     baseQuery = { ...baseQuery, ...query }
+  //    // previousQuery = { ...previousQuery, ...query }
+  //   } else {
+  //     // For regular users - only show their own data
+  //     baseQuery.assignedAgent = user._id
+  //    // previousQuery.assignedAgent = user._id
+  //   }
+  // }
 
   // Create aggregation pipeline for each status
   const statusPromises = dashboardStatusList.map(async (status) => {
@@ -495,14 +497,15 @@ const calculateSalesMetrics = async (user) => {
     throw new Error('Failed to calculate sales metrics')
   }
 }
-const leadSourceMetricsss = async (start, end, user) => {
+const leadSourceMetricsss = async (leadAccessFilter,start, end, user) => {
     const match = {
-        companyId: user.companyId
+        companyId: user.companyId,
+        ...leadAccessFilter,
     };
 
-    if (user.role !== userRoles.SUPER_ADMIN) {
-        match.assignedAgent = user._id;
-    }
+    // if (user.role !== userRoles.SUPER_ADMIN) {
+    //     match.assignedAgent = user._id;
+    // }
 
     const leadSourceStats = await LeadModel.aggregate([
         { $match: match },
