@@ -18,10 +18,11 @@ router.get(usersVersion + "/locations/states/:id",
     auth.isAuthenticated({
     }), 
     controller.getAllState);
-
+  const leadAccessMiddleware = require('../../middleware/leadAccessMiddleware');
 router.get(usersVersion + "/lead-types",
     auth.isAuthenticated({
     }),
+    leadAccessMiddleware,
     controller.getAllTypes);
 
 module.exports = router;

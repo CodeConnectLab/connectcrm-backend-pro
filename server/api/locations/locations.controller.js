@@ -21,7 +21,7 @@ exports.getAllTypes1=(req,res,next)=>{
 };
 
 exports.getAllTypes = (req, res) => {
-    return service.getAllTypes(req.body,req.user)
+    return service.getAllTypes({ leadAccessFilter: req.leadAccessFilter },req.body,req.user)
       .then(result => res.status(200).json({
         success: true,
         message: 'Lead types fetched successfully',

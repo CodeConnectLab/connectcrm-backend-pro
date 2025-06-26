@@ -32,7 +32,7 @@ exports.getAllState = async (countryCode, user) => {
     }
 };
 
-exports.getAllTypes = async ({}, user) => {
+exports.getAllTypes = async ({ leadAccessFilter }, { }, user) => {
   try {
     // Input validation
     if (!user?.companyId || !user?._id) {
@@ -59,24 +59,45 @@ exports.getAllTypes = async ({}, user) => {
       .lean()
 
     // Fetch users based on role
+    // const agents = await userModel
+    //   .find({
+    //     companyId: user.companyId,
+    //     deleted: false,
+    //     ...(user.role === userRoles.USER
+    //       ? { _id: user._id } // For regular users - only themselves
+    //       : user.role === userRoles.TEAM_ADMIN
+    //       ? {
+    //           $or: [
+    //             { _id: user._id }, // Team Leader themselves
+    //             { assignedTL: user._id } // Users assigned to this Team Leader
+    //           ]
+    //         }
+    //       : {}) // For Super Admin - no additional filters
+    //   })
+    //   .select('name role')
+    //   .lean()
+    //   .sort({ name: 1 }) // Sort by name
+
+    // ...existing code...
+
+    // Transform leadAccessFilter to apply on _id instead of assignedAgent
+    let idFilter = {};
+    if (leadAccessFilter && leadAccessFilter.assignedAgent) {
+      idFilter._id = leadAccessFilter.assignedAgent;
+    }
+
+    // Fetch users based on transformed filter
     const agents = await userModel
       .find({
         companyId: user.companyId,
         deleted: false,
-        ...(user.role === userRoles.USER
-          ? { _id: user._id } // For regular users - only themselves
-          : user.role === userRoles.TEAM_ADMIN
-          ? {
-              $or: [
-                { _id: user._id }, // Team Leader themselves
-                { assignedTL: user._id } // Users assigned to this Team Leader
-              ]
-            }
-          : {}) // For Super Admin - no additional filters
+        ...idFilter
       })
       .select('name role')
       .lean()
-      .sort({ name: 1 }) // Sort by name
+      .sort({ name: 1 }); // Sort by name
+
+    // ...existing code...
 
     // Fetch all products and services for the company
     const productsServices = await productServiceModel
