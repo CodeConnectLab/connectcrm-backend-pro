@@ -549,7 +549,7 @@ exports.listUsers = async ({ }, user) => {
         deleted: 1,
         createdAt: 1,
       }
-    );
+    ).sort({ name: 1 }); // Sort by name;
   }
   /////// for employees 
   if (user.role == userRoles.USER) {
@@ -570,7 +570,7 @@ exports.listUsers = async ({ }, user) => {
         deleted: 1,
         createdAt: 1,
       }
-    );
+    ).sort({ name: 1 }); // Sort by name;;
   }
 /////// for Team Leader 
   if(user.role == userRoles.TEAM_ADMIN){
@@ -595,7 +595,7 @@ exports.listUsers = async ({ }, user) => {
         deleted: 1,
         createdAt: 1,
       }
-    );
+    ).sort({ name: 1 }); // Sort by name;;
   }
 
 };

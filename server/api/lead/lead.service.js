@@ -1229,8 +1229,36 @@ exports.bulkDeleteLeads = async (data, user) => {
 
 
 ///////////  export excel file
-exports.exportExcel = async (data, user) => {
+exports.exportExcel1 = async (data, user) => {
     try {
+        const {status, productService, source, assignedAgent, startDate, endDate} = data;
+            // Add date range filter if provided
+      if (filters.startDate && filters.endDate) {
+        const start = new Date(filters.startDate)
+        start.setUTCHours(0, 0, 0, 0)
+        const end = new Date(filters.endDate)
+        end.setUTCHours(23, 59, 59, 999)
+
+        query.followUpDate = {
+          $gte: start,
+          $lte: end
+        }
+      }
+
+      // Add specific filters if provided
+      if (filters?.leadStatus) {
+        query.leadStatus = new Types.ObjectId(filters.leadStatus)
+      }
+      if (filters?.assignedAgent) {
+        query.assignedAgent = new Types.ObjectId(filters.assignedAgent)
+      }
+      if (filters?.leadSource) {
+        query.leadSource = new Types.ObjectId(filters.leadSource)
+      }
+      if (filters?.productService) {
+        query.productService = new Types.ObjectId(filters.productService)
+      }
+
         // Fetch leads data
         const leads = await Lead.find({
           companyId: user.companyId, // Security check: only fetch leads from user's company
@@ -1291,10 +1319,108 @@ exports.exportExcel = async (data, user) => {
         return Promise.reject(error);
     }
 };
+///////////  export excel file
+exports.exportExcel = async (data, user) => {
+    try {
+        const { status, productService, source, assignedAgent, startDate, endDate } = data;
+        const query = { companyId: user.companyId };
+
+        // Add date range filter if provided
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            start.setUTCHours(0, 0, 0, 0);
+            const endDt = new Date(endDate);
+            endDt.setUTCHours(23, 59, 59, 999);
+
+            query.followUpDate = {
+                $gte: start,
+                $lte: endDt
+            };
+        }
+
+        // Add specific filters if provided
+        if (status) {
+            query.leadStatus = new Types.ObjectId(status);
+        }
+        if (assignedAgent) {
+            query.assignedAgent = new Types.ObjectId('685d876212668d9d3527dc8c');
+        }
+        if (source) {
+            query.leadSource = new Types.ObjectId(source);
+        }
+        if (productService) {
+            query.productService = new Types.ObjectId(productService);
+        }
+
+        // Fetch leads data with population for readable names
+        const leads = await Lead.find(query)
+            .select('firstName contactNumber leadSource assignedAgent leadStatus productService createdAt')
+            .populate([
+                { path: 'leadSource', select: 'name' },
+                { path: 'assignedAgent', select: 'name' },
+                { path: 'leadStatus', select: 'name' },
+                { path: 'productService', select: 'name' }
+            ])
+            .lean();
+
+        if (!leads || leads.length === 0) {
+            throw new Error('No leads found to export');
+        }
+
+        // Transform data for Excel format
+        const excelData = leads.map(lead => ({
+            'Name': lead?.firstName || '',
+            'Number': lead?.contactNumber || '',
+            'Lead Source': lead?.leadSource?.name || '',
+            'Agent': lead?.assignedAgent?.name || '',
+            'Status': lead?.leadStatus?.name || '',
+            'Service': lead?.productService?.name || '',
+            'Created Date': lead.createdAt ? new Date(lead.createdAt).toLocaleDateString() : ''
+        }));
+
+        // Create workbook and worksheet
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+        // Set column widths
+        const colWidths = [
+            { wch: 20 }, // Name
+            { wch: 15 }, // Number
+            { wch: 15 }, // Lead Source
+            { wch: 20 }, // Agent
+            { wch: 12 }, // Status
+            { wch: 25 }, // Service
+            { wch: 15 }  // Created Date
+        ];
+        worksheet['!cols'] = colWidths;
+
+        // Add worksheet to workbook
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Leads');
+
+        // Generate buffer
+        const excelBuffer = XLSX.write(workbook, {
+            type: 'base64', // Changed to base64 for easier transmission
+            bookType: 'xlsx',
+            bookSST: false
+        });
+
+        // Return the file details
+        return {
+            fileData: excelBuffer,
+            fileName: `leads_export_${new Date().getTime()}.xlsx`,
+            contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        };
+
+    } catch (error) {
+        console.error('Excel Export Error:', error);
+        return Promise.reject(error);
+    }
+};
 
 ////////   export Pdf file
-exports.exportPDF = async (data, user) => {
+exports.exportPDF1 = async (data, user) => {
   try {
+    const {status, productService, source, assignedAgent, startDate, endDate} = data;
       // Fetch leads data
       const leads = await Lead.find({
         companyId: user.companyId, // Security check: only fetch leads from user's company
@@ -1410,6 +1536,160 @@ exports.exportPDF = async (data, user) => {
   } catch (error) {
       console.error('PDF Export Error:', error);
       return Promise.reject(error);
+  }
+};
+
+////////   export Pdf file
+exports.exportPDF = async (data, user) => {
+  try {
+    const { status, productService, source, assignedAgent, startDate, endDate } = data;
+    const query = { companyId: user.companyId };
+    // Add date range filter if provided
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      start.setUTCHours(0, 0, 0, 0);
+      const endDt = new Date(endDate);
+      endDt.setUTCHours(23, 59, 59, 999);
+
+      query.followUpDate = {
+        $gte: start,
+        $lte: endDt
+      };
+    }
+
+    // Add specific filters if provided
+    if (status) {
+      query.leadStatus = new Types.ObjectId(status);
+    }
+    if (assignedAgent) {
+      query.assignedAgent = new Types.ObjectId(assignedAgent);
+    }
+    if (source) {
+      query.leadSource = new Types.ObjectId(source);
+    }
+    if (productService) {
+      query.productService = new Types.ObjectId(productService);
+    }
+
+    // Fetch leads data with population for readable names
+    const leads = await Lead.find(query)
+      .select('firstName contactNumber leadSource assignedAgent leadStatus productService createdAt')
+      .populate([
+        { path: 'leadSource', select: 'name' },
+        { path: 'assignedAgent', select: 'name' },
+        { path: 'leadStatus', select: 'name' },
+        { path: 'productService', select: 'name' }
+      ])
+      .lean();
+
+    if (!leads || leads.length === 0) {
+      throw new Error('No leads found to export');
+    }
+
+    // Create PDF document
+    const doc = new PDFDocument();
+    const chunks = [];
+
+    // Collect PDF chunks
+    doc.on('data', chunk => chunks.push(chunk));
+
+    // Create promise to handle PDF generation
+    const pdfPromise = new Promise((resolve, reject) => {
+      doc.on('end', () => {
+        const pdfBuffer = Buffer.concat(chunks);
+        resolve(pdfBuffer.toString('base64'));
+      });
+      doc.on('error', reject);
+    });
+
+    // Add header
+    doc.fontSize(16)
+      .text('Leads Report', { align: 'center' })
+      .moveDown();
+
+    // Add table headers
+    const headers = ['Name', 'Number', 'Lead Source', 'Agent', 'Status', 'Service', 'Created Date'];
+    const startX = 50;
+    let startY = 100;
+    const rowHeight = 30;
+    const colWidth = 75;
+
+    // Draw headers with background
+    doc.fillColor('#f0f0f0')
+      .rect(startX - 5, startY - 15, colWidth * headers.length + 10, rowHeight)
+      .fill();
+
+    headers.forEach((header, i) => {
+      doc.fillColor('#000')
+        .fontSize(10)
+        .text(header, startX + (i * colWidth), startY - 10, {
+          width: colWidth,
+          align: 'left'
+        });
+    });
+
+    startY += 20;
+
+    // Draw leads data
+    leads.forEach((lead, index) => {
+      // Add new page if needed
+      if (startY > 700) {
+        doc.addPage();
+        startY = 50;
+      }
+
+      // Alternate row background for better readability
+      if (index % 2 === 0) {
+        doc.fillColor('#f9f9f9')
+          .rect(startX - 5, startY - 5, colWidth * headers.length + 10, rowHeight)
+          .fill();
+      }
+
+      doc.fillColor('#000')
+        .fontSize(9);
+
+      const rowData = [
+        lead?.firstName || '',
+        lead?.contactNumber || '',
+        lead?.leadSource?.name || '',
+        lead?.assignedAgent?.name || '',
+        lead?.leadStatus?.name || '',
+        lead?.productService?.name || '',
+        lead.createdAt ? new Date(lead.createdAt).toLocaleDateString() : ''
+      ];
+
+      rowData.forEach((text, i) => {
+        // Truncate text if too long
+        const truncatedText = text.toString().length > 15
+          ? text.toString().substring(0, 12) + '...'
+          : text.toString();
+
+        doc.text(truncatedText,
+          startX + (i * colWidth),
+          startY,
+          {
+            width: colWidth - 5,
+            align: 'left'
+          }
+        );
+      });
+
+      startY += rowHeight;
+    });
+
+    // End the document and get base64 data
+    doc.end();
+    const pdfData = await pdfPromise;
+
+    return {
+      fileData: pdfData,
+      fileName: `leads_export_${new Date().getTime()}.pdf`,
+      contentType: 'application/pdf'
+    };
+
+  } catch (error) {
+    console.error('PDF Export Error:', error);
+    return Promise.reject(error);
   }
 };
 

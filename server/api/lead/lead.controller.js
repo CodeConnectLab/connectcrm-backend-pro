@@ -188,7 +188,15 @@ exports.bulkUplodeLead = async (req, res) => {
 
 exports.exportExcel = async (req, res) => {
   try {
-      const result = await service.exportExcel(req.body, req.user);
+     const queryParams = {
+      status: req.query.status,
+      productService: req.query.productService,
+      source: req.query.source,
+      assignedAgent: req.query.assignedAgent,
+      startDate: req.query.startDate,
+      endDate: req.query.endDate,
+    };
+      const result = await service.exportExcel(queryParams, req.user);
       // Send the file data in the response
       return responseHandler.success(res, result, "Excel file generated successfully!", 200);
   } catch (error) {
@@ -199,7 +207,15 @@ exports.exportExcel = async (req, res) => {
 
 exports.exportPdf=async (req,res)=>{
   try {
-    const result = await service.exportPDF(req.body, req.user);
+     const queryParams = {
+      status: req.query.status,
+      productService: req.query.productService,
+      source: req.query.source,
+      assignedAgent: req.query.assignedAgent,
+      startDate: req.query.startDate,
+      endDate: req.query.endDate,
+    };
+    const result = await service.exportPDF(queryParams, req.user);
     return responseHandler.success(res, result, "PDF file generated successfully!", 200);
 } catch (error) {
     console.error('Export PDF Error:', error);
