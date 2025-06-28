@@ -1332,7 +1332,7 @@ exports.exportExcel = async (data, user) => {
             const endDt = new Date(endDate);
             endDt.setUTCHours(23, 59, 59, 999);
 
-            query.createdAt = {
+            query.followUpDate = {
                 $gte: start,
                 $lte: endDt
             };
@@ -1551,7 +1551,7 @@ exports.exportPDF = async (data, user) => {
       const endDt = new Date(endDate);
       endDt.setUTCHours(23, 59, 59, 999);
 
-      query.createdAt = {
+      query.followUpDate = {
         $gte: start,
         $lte: endDt
       };
