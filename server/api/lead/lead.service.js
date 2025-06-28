@@ -1332,7 +1332,7 @@ exports.exportExcel = async (data, user) => {
             const endDt = new Date(endDate);
             endDt.setUTCHours(23, 59, 59, 999);
 
-            query.followUpDate = {
+            query.createdAt = {
                 $gte: start,
                 $lte: endDt
             };
@@ -1343,7 +1343,7 @@ exports.exportExcel = async (data, user) => {
             query.leadStatus = new Types.ObjectId(status);
         }
         if (assignedAgent) {
-            query.assignedAgent = new Types.ObjectId('685d876212668d9d3527dc8c');
+            query.assignedAgent = new Types.ObjectId(assignedAgent);
         }
         if (source) {
             query.leadSource = new Types.ObjectId(source);
@@ -1551,7 +1551,7 @@ exports.exportPDF = async (data, user) => {
       const endDt = new Date(endDate);
       endDt.setUTCHours(23, 59, 59, 999);
 
-      query.followUpDate = {
+      query.createdAt = {
         $gte: start,
         $lte: endDt
       };

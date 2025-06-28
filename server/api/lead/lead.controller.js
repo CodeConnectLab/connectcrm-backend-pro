@@ -188,10 +188,10 @@ exports.bulkUplodeLead = async (req, res) => {
 
 exports.exportExcel = async (req, res) => {
   try {
-     const queryParams = {
-      status: req.query.status,
+      const queryParams = {
+      status: req.query.leadStatus,
       productService: req.query.productService,
-      source: req.query.source,
+      source: req.query.leadSource,
       assignedAgent: req.query.assignedAgent,
       startDate: req.query.startDate,
       endDate: req.query.endDate,
@@ -207,10 +207,11 @@ exports.exportExcel = async (req, res) => {
 
 exports.exportPdf=async (req,res)=>{
   try {
+   
      const queryParams = {
-      status: req.query.status,
+      status: req.query.leadStatus,
       productService: req.query.productService,
-      source: req.query.source,
+      source: req.query.leadSource,
       assignedAgent: req.query.assignedAgent,
       startDate: req.query.startDate,
       endDate: req.query.endDate,
