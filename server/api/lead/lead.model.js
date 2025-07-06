@@ -115,6 +115,19 @@ const leadSchema = new mongoose.Schema({
     ref: 'LostReason',
     required: false
   },
+  //////key related to facebook lead gen
+  fbLeadGenId: {
+    type: String,
+    required: false
+  },
+  fbLeadGenFormId: {
+    type: String,
+    required: false
+  },
+  fbLeadGenAdId: {
+    type: String,
+    required: false
+  },
   createdAt: {
     type: Date,
     default: Date.now

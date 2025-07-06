@@ -1,73 +1,8 @@
-// const LeadModel = require('../lead/lead.model') // Adjust the path as needed
-// const LeadSourceModel = require('../leadSources/leadSources.model')
-// const CompanyModel = require('../company/company.model')
-// const crypto = require('crypto')
-
-// const ENCRYPTION_KEY =
-//   process.env.ENCRYPTION_KEY || 'your-32-character-secret-key-here' // 32 bytes
-// const IV_LENGTH = 16 // For AES, this is always 16
-
-// const encrypt = (text) => {
-//   const iv = crypto.randomBytes(IV_LENGTH)
-//   const cipher = crypto.createCipheriv(
-//     'aes-256-cbc',
-//     Buffer.from(ENCRYPTION_KEY),
-//     iv
-//   )
-//   let encrypted = cipher.update(`${text}`)
-//   encrypted = Buffer.concat([encrypted, cipher.final()])
-//   return iv.toString('hex') + ':' + encrypted.toString('hex')
-// }
-
-// const decrypt = (text) => {
-//   const textParts = text.split(':')
-//   const iv = Buffer.from(textParts.shift(), 'hex')
-//   const encryptedText = Buffer.from(textParts.join(':'), 'hex')
-//   const decipher = crypto.createDecipheriv(
-//     'aes-256-cbc',
-//     Buffer.from(ENCRYPTION_KEY),
-//     iv
-//   )
-//   let decrypted = decipher.update(encryptedText)
-//   decrypted = Buffer.concat([decrypted, decipher.final()])
-//   return decrypted.toString()
-// }
-
-// const generateApiKey = (leadSource, companyId) => {
-//   const data = `${leadSource}_${companyId}`
-//   return encrypt(data)
-// }
-
-// exports.getCurlApi = async (leadSource, user) => {
-//   console.log(leadSource, user?.companyId)
-//   try {
-//     if (!leadSource || !user?.companyId) {
-//       throw new Error('LeadSource and companyId are required')
-//     }
-
-//     const apiKey = generateApiKey(leadSource, user.companyId)
-//     const baseUrl = process.env.BASE_URL || 'https://api.codeconnect.in'
-
-//     const curlCommand = `curl -X POST "${baseUrl}/api/v1/outsource-lead?apikey=${apiKey}" \\
-//       -H "Content-Type: application/json" \\
-//       -d '{"propertyDetails": "YOUR_PROPERTY_DATA_HERE"}'`
-
-//     return {
-//       apiKey,
-//       curlCommand,
-//       leadSource,
-//       companyId: user.companyId
-//     }
-//   } catch (error) {
-//     return Promise.reject(error)
-//   }
-// }
-
 const crypto = require('crypto')
 const LeadModel = require('../lead/lead.model')
 const LeadSourceModel = require('../leadSources/leadSources.model')
 const CompanyModel = require('../company/company.model')
-
+const axios = require("axios");
 // Key derivation function to ensure proper key length
 const deriveKey = (key) => {
   return crypto.scryptSync(key, 'salt', 32) // Returns a 32-byte key
@@ -211,3 +146,115 @@ exports.decodeApiKey = (apiKey) => {
     throw new Error('Invalid API key')
   }
 }
+
+///////////////////facebook lead gen webhook
+exports.facebookLeadGenWebhook1 = async (query, body) => {
+    try {
+        if (!query || !body) {
+            throw new Error('Query and body are required')
+        }
+
+        // Process the incoming data from Facebook
+        const { leadgen_id, form_id, created_time, ad_id } = body
+        console.log('Received Facebook lead gen data:', body)
+        const companyId = '67b2c739b9844cf70ce71233';
+        const leadSource ='67b9761e239b25980850a707';
+        const leadAddType = 'ThirdParty';
+        ////now getting lead information from facebook graph api
+        // You can use the leadgen_id to fetch more details from Facebook Graph API if needed
+        // For example, you can use the Facebook Graph API to get more details about the lead
+        // const leadDetails = await fetch(`https://graph.facebook.com/v12.0/${leadgen_id}?access_token=${process.env.FACEBOOK_ACCESS_TOKEN}`)
+        // const leadData = await leadDetails.json()
+        const leadDetails = await axios.get(`https://graph.facebook.com/v12.0/${leadgen_id}?access_token=${process.env.FACEBOOK_ACCESS_TOKEN}`);
+        const leadData = leadDetails.data;
+        console.log('Lead details from Facebook:', leadData)
+        // Create a lead data object
+        const leadDataObject = {
+            fbLeadGenId: leadgen_id,
+            fbLeadGenFormId: form_id,
+            fbLeadGenAdId: ad_id,
+            companyId: companyId,
+            leadSource: leadSource,
+            leadAddType: leadAddType,
+            firstName: leadData?.first_name || '',
+            lastName: leadData?.last_name || '',
+            email: leadData?.email || '',
+            contactNumber: leadData?.phone_number || '',
+            description: 'Lead generated from Facebook',
+            fullAddress: leadData?.full_address || '',
+            city: leadData?.city || '',
+        }
+        // Save the lead data object to the database
+        const newLead = new LeadModel(leadDataObject)
+        const savedLead = await newLead.save()
+        if (!savedLead) {
+            throw new Error('Failed to save lead from Facebook')
+        }
+        console.log('Lead saved successfully:', savedLead)
+        // Return a success response
+
+      
+
+
+
+        // Here you can save the lead data to your database or perform any other actions
+        // For demonstration, we'll just return the received data
+        return {
+            leadgenId: leadgen_id,
+            formId: form_id,
+            createdTime: created_time,
+            adId: ad_id,
+            message: 'Facebook lead gen webhook processed successfully'
+        }
+    } catch (error) {
+        console.error('Error in facebookLeadGenWebhook:', error)
+        return Promise.reject(error)
+    }
+}
+
+
+exports.facebookLeadGenWebhook = async (query, body) => {
+  //try {
+    if (!query || !body) {
+      console.log("Query or body is missing in the request");
+      //throw new Error("Query and body are required");
+    }
+ console.log("Received Facebook lead gen data:", body);
+    const { leadgen_id, form_id, created_time, ad_id } = body.entry?.[0]?.changes?.[0]?.value || {};
+    console.log("Received Facebook lead gen data:", body);
+
+    const leadDetailsRes = await axios.get(`https://graph.facebook.com/v12.0/${leadgen_id}?access_token=${process.env.FACEBOOK_ACCESS_TOKEN}`);
+    const leadData = leadDetailsRes.data;
+
+    const leadDataObject = {
+      fbLeadGenId: leadgen_id,
+      fbLeadGenFormId: form_id,
+      fbLeadGenAdId: ad_id,
+      companyId: "67b2c739b9844cf70ce71233",
+      leadSource: "67b9761e239b25980850a707",
+      leadAddType: "ThirdParty",
+      firstName: leadData?.field_data?.find(f => f.name === "full_name")?.values?.[0] || '',
+      email: leadData?.field_data?.find(f => f.name === "email")?.values?.[0] || '',
+      contactNumber: leadData?.field_data?.find(f => f.name === "phone_number")?.values?.[0] || '',
+      description: "Lead generated from Facebook",
+    };
+
+    const newLead = new LeadModel(leadDataObject);
+    const savedLead = await newLead.save();
+    if (!savedLead) {
+      throw new Error("Failed to save lead from Facebook");
+    }
+
+    return {
+      leadgenId: leadgen_id,
+      formId: form_id,
+      createdTime: created_time,
+      adId: ad_id,
+      message: "Facebook lead gen webhook processed successfully"
+    };
+  // } catch (error) {
+  //   console.error("Error in facebookLeadGenWebhook:", error);
+  //   return Promise.reject(error);
+  // }
+};
+

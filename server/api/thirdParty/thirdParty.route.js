@@ -28,4 +28,23 @@ router.post(
     controller.OutsourceLead
   )
 
+//////////////////facebook lead gen webhook
+  router.get(
+    usersVersion + '/facebook-lead-gen-webhook',
+    // auth.isAuthenticated({
+    //   // adminOnly: true
+    // }),
+    controller.facebookLeadGenWebhookVarify
+  )
+
+  router.post(
+    usersVersion + '/facebook-lead-gen-webhook',
+    // auth.isAuthenticated({
+    //   // adminOnly: true
+    // }),
+    controller.facebookLeadGenWebhook
+  )
+
+
+
 module.exports = router
