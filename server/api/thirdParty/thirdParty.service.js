@@ -148,117 +148,9 @@ exports.decodeApiKey = (apiKey) => {
 }
 
 ///////////////////facebook lead gen webhook
+
+
 exports.facebookLeadGenWebhook1 = async (query, body) => {
-    try {
-        if (!query || !body) {
-            throw new Error('Query and body are required')
-        }
-
-        // Process the incoming data from Facebook
-        const { leadgen_id, form_id, created_time, ad_id } = body
-        console.log('Received Facebook lead gen data:', body)
-        const companyId = '67b2c739b9844cf70ce71233';
-        const leadSource ='67b9761e239b25980850a707';
-        const leadAddType = 'ThirdParty';
-        ////now getting lead information from facebook graph api
-        // You can use the leadgen_id to fetch more details from Facebook Graph API if needed
-        // For example, you can use the Facebook Graph API to get more details about the lead
-        // const leadDetails = await fetch(`https://graph.facebook.com/v12.0/${leadgen_id}?access_token=${process.env.FACEBOOK_ACCESS_TOKEN}`)
-        // const leadData = await leadDetails.json()
-        const leadDetails = await axios.get(`https://graph.facebook.com/v12.0/${leadgen_id}?access_token=${process.env.FACEBOOK_ACCESS_TOKEN}`);
-        const leadData = leadDetails.data;
-        console.log('Lead details from Facebook:', leadData)
-        // Create a lead data object
-        const leadDataObject = {
-            fbLeadGenId: leadgen_id,
-            fbLeadGenFormId: form_id,
-            fbLeadGenAdId: ad_id,
-            companyId: companyId,
-            leadSource: leadSource,
-            leadAddType: leadAddType,
-            firstName: leadData?.first_name || '',
-            lastName: leadData?.last_name || '',
-            email: leadData?.email || '',
-            contactNumber: leadData?.phone_number || '',
-            description: 'Lead generated from Facebook',
-            fullAddress: leadData?.full_address || '',
-            city: leadData?.city || '',
-        }
-        // Save the lead data object to the database
-        const newLead = new LeadModel(leadDataObject)
-        const savedLead = await newLead.save()
-        if (!savedLead) {
-            throw new Error('Failed to save lead from Facebook')
-        }
-        console.log('Lead saved successfully:', savedLead)
-        // Return a success response
-
-      
-
-
-
-        // Here you can save the lead data to your database or perform any other actions
-        // For demonstration, we'll just return the received data
-        return {
-            leadgenId: leadgen_id,
-            formId: form_id,
-            createdTime: created_time,
-            adId: ad_id,
-            message: 'Facebook lead gen webhook processed successfully'
-        }
-    } catch (error) {
-        console.error('Error in facebookLeadGenWebhook:', error)
-        return Promise.reject(error)
-    }
-}
-
-
-exports.facebookLeadGenWebhook2 = async (query, body) => {
-  //try {
-    if (!query || !body) {
-      console.log("Query or body is missing in the request");
-      //throw new Error("Query and body are required");
-    }
- console.log("Received Facebook lead gen data:", body);
-    const { leadgen_id, form_id, created_time, ad_id } = body.entry?.[0]?.changes?.[0]?.value || {};
-    console.log("Received Facebook lead gen data:", body);
-
-    const leadDetailsRes = await axios.get(`https://graph.facebook.com/v12.0/${leadgen_id}?access_token=${process.env.FACEBOOK_ACCESS_TOKEN}`);
-    const leadData = leadDetailsRes.data;
-
-    const leadDataObject = {
-      fbLeadGenId: leadgen_id,
-      fbLeadGenFormId: form_id,
-      fbLeadGenAdId: ad_id,
-      companyId: "67b2c739b9844cf70ce71233",
-      leadSource: "67b9761e239b25980850a707",
-      leadAddType: "ThirdParty",
-      firstName: leadData?.field_data?.find(f => f.name === "full_name")?.values?.[0] || '',
-      email: leadData?.field_data?.find(f => f.name === "email")?.values?.[0] || '',
-      contactNumber: leadData?.field_data?.find(f => f.name === "phone_number")?.values?.[0] || '',
-      description: "Lead generated from Facebook",
-    };
-
-    const newLead = new LeadModel(leadDataObject);
-    const savedLead = await newLead.save();
-    if (!savedLead) {
-      throw new Error("Failed to save lead from Facebook");
-    }
-
-    return {
-      leadgenId: leadgen_id,
-      formId: form_id,
-      createdTime: created_time,
-      adId: ad_id,
-      message: "Facebook lead gen webhook processed successfully"
-    };
-  // } catch (error) {
-  //   console.error("Error in facebookLeadGenWebhook:", error);
-  //   return Promise.reject(error);
-  // }
-};
-
-exports.facebookLeadGenWebhook = async (query, body) => {
   try {
     console.log("🔥 Facebook webhook POST hit:", JSON.stringify(body, null, 2));
     
@@ -320,6 +212,117 @@ exports.facebookLeadGenWebhook = async (query, body) => {
     console.error("❌ Error in facebookLeadGenWebhook:", error);
     // Still return success to Facebook to avoid retries
     return { 
+      error: error.message,
+      message: "Error processing webhook but acknowledged"
+    };
+  }
+};
+
+
+
+const APP_ID = process.env.FACEBOOK_APP_ID;
+const APP_SECRET = process.env.FACEBOOK_APP_SECRET;
+
+let ACCESS_TOKEN = process.env.FACEBOOK_ACCESS_TOKEN; // Will refresh if expired
+
+// ✅ Check if access token is valid
+async function isAccessTokenValid(token) {
+  const url = `https://graph.facebook.com/debug_token?input_token=${token}&access_token=${APP_ID}|${APP_SECRET}`;
+  try {
+    const res = await axios.get(url);
+    return res.data?.data?.is_valid;
+  } catch (err) {
+    console.error("Access token validation error:", err.message);
+    return false;
+  }
+}
+
+// ✅ Refresh access token
+async function refreshAccessToken(currentToken) {
+  const url = `https://graph.facebook.com/v23.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${APP_ID}&client_secret=${APP_SECRET}&fb_exchange_token=${currentToken}`;
+  try {
+    const res = await axios.get(url);
+    return res.data?.access_token;
+  } catch (err) {
+    console.error("Error refreshing access token:", err.message);
+    return null;
+  }
+}
+
+// ✅ Main Webhook Handler
+exports.facebookLeadGenWebhook = async (query, body) => {
+  try {
+    console.log("🔥 Facebook webhook POST hit:", JSON.stringify(body, null, 2));
+
+    if (!body?.entry?.[0]?.changes?.[0]) {
+      console.log("Invalid payload structure");
+      return { message: "Invalid payload structure" };
+    }
+
+    const changes = body.entry[0].changes[0];
+
+    if (changes.field !== 'leadgen') {
+      console.log("Not a leadgen webhook");
+      return { message: "Not a leadgen webhook" };
+    }
+
+    const { leadgen_id, form_id, created_time, ad_id } = changes.value;
+
+    console.log("📌 Processing leadgen_id:", leadgen_id);
+
+    // ✅ Validate or Refresh Token
+    const valid = await isAccessTokenValid(ACCESS_TOKEN);
+    if (!valid) {
+      const refreshed = await refreshAccessToken(ACCESS_TOKEN);
+      if (!refreshed) throw new Error("Unable to refresh access token.");
+      ACCESS_TOKEN = refreshed;
+    }
+
+    // ✅ Fetch Lead Data
+    const leadResponse = await axios.get(
+      `https://graph.facebook.com/v17.0/${leadgen_id}?access_token=${ACCESS_TOKEN}`
+    );
+    const leadData = leadResponse.data;
+
+   
+
+    // ✅ Create Lead Object
+    const fields = leadData?.field_data || [];
+    const fieldMap = Object.fromEntries(fields.map(f => [f.name, f.values?.[0]]));
+
+    const leadPayload = {
+      fbLeadGenId: leadgen_id,
+      fbLeadGenFormId: form_id,
+      fbLeadGenAdId: ad_id,
+      companyId: "67b2c739b9844cf70ce71233",
+      leadSource: "67b9761e239b25980850a707",
+      leadAddType: "ThirdParty",
+      firstName: fieldMap.full_name || fieldMap.first_name || '',
+      email: fieldMap.email || '',
+      contactNumber: fieldMap.phone_number || '',
+      description: "Lead generated from Facebook",
+    };
+
+    console.log("📥 Saving lead to DB:", leadPayload);
+    const newLead = new LeadModel(leadPayload);
+    const saved = await newLead.save();
+
+   
+
+    return {
+      leadgenId: leadgen_id,
+      formId: form_id,
+      createdTime: created_time,
+      adId: ad_id,
+      leadId: saved._id,
+      message: "Facebook lead gen webhook processed successfully"
+    };
+
+  } catch (error) {
+    console.error("❌ Error in facebookLeadGenWebhook:", error.message);
+    fs.appendFileSync(LOG_FILE, `❌ Error: ${error.stack}\n`);
+
+    return {
       error: error.message,
       message: "Error processing webhook but acknowledged"
     };

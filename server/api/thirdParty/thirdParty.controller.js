@@ -24,6 +24,7 @@ exports.facebookLeadGenWebhookVarify = (req, res) => {
     console.log('challenge:', challenge);
 
     if (verifyToken === process.env.FACEBOOK_VERIFY_TOKEN) {
+        console.log('Webhook verification successful');
         return res.status(200).send(challenge);
     } else {
         return res.status(403).send('Forbidden');
