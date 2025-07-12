@@ -301,6 +301,7 @@ exports.facebookLeadGenWebhook = async (query, body) => {
       email: fieldMap.email || '',
       contactNumber: fieldMap.phone_number || '',
       description: "Lead generated from Facebook",
+      followUpDate: new Date(),
     };
 
     console.log("📥 Saving lead to DB:", leadPayload);
