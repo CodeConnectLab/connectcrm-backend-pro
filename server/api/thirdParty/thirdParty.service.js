@@ -258,6 +258,7 @@ exports.facebookLeadGenWebhook = async (query, body) => {
       companyId: pageDetails?.companyId || '67b2c739b9844cf70ce71233',
       leadSource: pageDetails?.leadSource || '67b9761e239b25980850a707', // Default or provided lead source
       leadAddType: "ThirdParty",
+      fbCompainName: pageDetails?.pageName || 'Unknown Campaign',
       firstName: fieldMap.full_name || fieldMap.first_name || '',
       email: fieldMap.email || '',
       contactNumber: fieldMap.phone_number || '',

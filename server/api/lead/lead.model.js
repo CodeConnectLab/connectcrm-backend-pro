@@ -128,6 +128,10 @@ const leadSchema = new mongoose.Schema({
     type: String,
     required: false
   },
+  fbCompainName:{
+    type: String,
+    required: false
+  },
   createdAt: {
     type: Date,
     default: Date.now
