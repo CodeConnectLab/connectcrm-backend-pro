@@ -205,7 +205,7 @@ async function generateToken(user) {
             secret: process.env.REFRESH_SECRET,
             type: 'refresh',
             expiresIn: {
-                expiresIn: '4d'
+                expiresIn: '30d'
             }
         }, user)
 

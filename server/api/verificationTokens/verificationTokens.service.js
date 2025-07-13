@@ -14,7 +14,7 @@ exports.registerToken = async ({
 }, user) => {
     try {
         let token = await jwtHelper.sign(data, secret, expiresIn ?? {
-            expiresIn: '1d'
+            expiresIn: '30d'
         })
 
         return verificationTokenModel.create({
