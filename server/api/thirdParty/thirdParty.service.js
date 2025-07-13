@@ -2,6 +2,7 @@ const crypto = require('crypto')
 const LeadModel = require('../lead/lead.model')
 const LeadSourceModel = require('../leadSources/leadSources.model')
 const CompanyModel = require('../company/company.model')
+const FacebookPage = require('./FacebookPage.model');
 const axios = require("axios");
 // Key derivation function to ensure proper key length
 const deriveKey = (key) => {
@@ -148,82 +149,30 @@ exports.decodeApiKey = (apiKey) => {
 }
 
 ///////////////////facebook lead gen webhook
+///////////////////facebook lead gen webhook
 
-
-exports.facebookLeadGenWebhook1 = async (query, body) => {
+async function getPageDetailsFromDB(pageId) {
   try {
-    console.log("🔥 Facebook webhook POST hit:", JSON.stringify(body, null, 2));
-    
-    if (!body || !body.entry || !body.entry[0] || !body.entry[0].changes) {
-      console.log("Invalid webhook payload structure");
-      return { message: "Invalid payload structure" };
+    const page = await FacebookPage.findOne({ pageId });
+    if (!page) {
+      console.error(`❌ No page config found for page ID: ${pageId}`);
+      return null;
     }
-
-    const entry = body.entry[0];
-    const changes = entry.changes[0];
-    
-    if (changes.field !== 'leadgen') {
-      console.log("Not a leadgen webhook");
-      return { message: "Not a leadgen webhook" };
-    }
-
-    const { leadgen_id, form_id, created_time, ad_id } = changes.value;
-    
-    console.log("Processing leadgen_id:", leadgen_id);
-
-    // Fetch lead details from Facebook
-    const leadDetailsRes = await axios.get(
-      `https://graph.facebook.com/v23.0/${leadgen_id}?access_token=${process.env.FACEBOOK_ACCESS_TOKEN}`
-    );
-    
-    const leadData = leadDetailsRes.data;
-    console.log("Lead data from Facebook:", JSON.stringify(leadData, null, 2));
-
-    // Create lead object
-    const leadDataObject = {
-      fbLeadGenId: leadgen_id,
-      fbLeadGenFormId: form_id,
-      fbLeadGenAdId: ad_id,
-      companyId: "67b2c739b9844cf70ce71233",
-      leadSource: "67b9761e239b25980850a707",
-      leadAddType: "ThirdParty",
-      firstName: leadData?.field_data?.find(f => f.name === "full_name")?.values?.[0] || '',
-      email: leadData?.field_data?.find(f => f.name === "email")?.values?.[0] || '',
-      contactNumber: leadData?.field_data?.find(f => f.name === "phone_number")?.values?.[0] || '',
-      description: "Lead generated from Facebook",
-    };
-
-    console.log("Creating lead with data:", leadDataObject);
-
-    const newLead = new LeadModel(leadDataObject);
-    const savedLead = await newLead.save();
-
-    console.log("Lead saved successfully:", savedLead._id);
-
     return {
-      leadgenId: leadgen_id,
-      formId: form_id,
-      createdTime: created_time,
-      adId: ad_id,
-      message: "Facebook lead gen webhook processed successfully"
+      accessToken: page?.accessToken,
+      companyId: page?.companyId,
+      leadSource: page?.leadSource,
+      pageName: page?.pageName,
+      pageId: page?.pageId
     };
-
   } catch (error) {
-    console.error("❌ Error in facebookLeadGenWebhook:", error);
-    // Still return success to Facebook to avoid retries
-    return { 
-      error: error.message,
-      message: "Error processing webhook but acknowledged"
-    };
+    console.error(`❌ Error fetching page details from DB for pageId ${pageId}:`, error.message);
+    return null;
   }
-};
-
-
+}
 
 const APP_ID = process.env.FACEBOOK_APP_ID;
 const APP_SECRET = process.env.FACEBOOK_APP_SECRET;
-
-let ACCESS_TOKEN = process.env.FACEBOOK_ACCESS_TOKEN; // Will refresh if expired
 
 // ✅ Check if access token is valid
 async function isAccessTokenValid(token) {
@@ -251,6 +200,7 @@ async function refreshAccessToken(currentToken) {
 
 // ✅ Main Webhook Handler
 exports.facebookLeadGenWebhook = async (query, body) => {
+      
   try {
     console.log("🔥 Facebook webhook POST hit:", JSON.stringify(body, null, 2));
 
@@ -260,31 +210,42 @@ exports.facebookLeadGenWebhook = async (query, body) => {
     }
 
     const changes = body.entry[0].changes[0];
+    const pageId = body.entry[0].id;
 
     if (changes.field !== 'leadgen') {
       console.log("Not a leadgen webhook");
       return { message: "Not a leadgen webhook" };
     }
 
+    const pageDetails = await getPageDetailsFromDB(pageId);
+    if (!pageDetails || !pageDetails.accessToken) {
+      throw new Error(`No access token found in DB for page ID: ${pageId}`);
+    }
+    
+    let ACCESS_TOKEN = pageDetails.accessToken;
     const { leadgen_id, form_id, created_time, ad_id } = changes.value;
 
     console.log("📌 Processing leadgen_id:", leadgen_id);
 
-    // ✅ Validate or Refresh Token
+    // ✅ Validate or Refresh Token if needed
     const valid = await isAccessTokenValid(ACCESS_TOKEN);
     if (!valid) {
+      console.log("🔄 Token invalid, attempting to refresh...");
       const refreshed = await refreshAccessToken(ACCESS_TOKEN);
-      if (!refreshed) throw new Error("Unable to refresh access token.");
+      if (!refreshed) {
+        throw new Error("Unable to refresh access token.");
+      }
       ACCESS_TOKEN = refreshed;
+      console.log("✅ Token refreshed successfully");
+    } else {
+      console.log("✅ Token is valid, proceeding...");
     }
 
     // ✅ Fetch Lead Data
     const leadResponse = await axios.get(
-      `https://graph.facebook.com/v17.0/${leadgen_id}?access_token=${ACCESS_TOKEN}`
+      `https://graph.facebook.com/v23.0/${leadgen_id}?access_token=${ACCESS_TOKEN}`
     );
     const leadData = leadResponse.data;
-
-   
 
     // ✅ Create Lead Object
     const fields = leadData?.field_data || [];
@@ -294,8 +255,8 @@ exports.facebookLeadGenWebhook = async (query, body) => {
       fbLeadGenId: leadgen_id,
       fbLeadGenFormId: form_id,
       fbLeadGenAdId: ad_id,
-      companyId: "67b2c739b9844cf70ce71233",
-      leadSource: "67b9761e239b25980850a707",
+      companyId: pageDetails?.companyId || '67b2c739b9844cf70ce71233',
+      leadSource: pageDetails?.leadSource || '67b9761e239b25980850a707', // Default or provided lead source
       leadAddType: "ThirdParty",
       firstName: fieldMap.full_name || fieldMap.first_name || '',
       email: fieldMap.email || '',
@@ -307,8 +268,6 @@ exports.facebookLeadGenWebhook = async (query, body) => {
     console.log("📥 Saving lead to DB:", leadPayload);
     const newLead = new LeadModel(leadPayload);
     const saved = await newLead.save();
-
-   
 
     return {
       leadgenId: leadgen_id,
@@ -329,4 +288,56 @@ exports.facebookLeadGenWebhook = async (query, body) => {
     };
   }
 };
+
+
+///////add facebook page
+exports.facebookPageWebhook = async (body, user) => {
+  const { pageId, pageName, accessToken, } = body;
+  try {
+    let leadSource = body?.leadSource || '67b9761e239b25980850a707'; // Default or provided lead source
+    const companyId = user?.companyId;
+    const page = await FacebookPage.findOneAndUpdate(
+      { pageId },
+      { pageName, accessToken, leadSource, companyId },
+      { upsert: true, new: true }
+    );
+    return page;
+  } catch (err) {
+    console.error("Error in facebookPageWebhook:", err);
+    return Promise.reject(error)
+  }
+}
+
+/////////get facebook page list
+exports.getFacebookPageList = async (user) => {
+  try {
+    const pages = await FacebookPage.find({ companyId: user.companyId }).sort({ createdAt: -1 });
+    return pages;
+  } catch (error) {
+    console.error("Error fetching Facebook pages:", error);
+    return Promise.reject(error);
+  }
+}
+
+/////////update facebook page
+exports.UpdateFacebookPageList = async (Id, body, user) => {
+
+  const { pageId, pageName, accessToken, } = body;
+  try {
+    const page = await FacebookPage.findOneAndUpdate(
+      { Id },
+      { pageName, accessToken, pageId },
+      { new: true }
+    );
+    if (!page) {
+      throw new Error('Page not found');
+    }
+    return page;
+  } catch (error) {
+    console.error("Error updating Facebook page:", error);
+    return Promise.reject(error);
+  }
+
+
+}
 

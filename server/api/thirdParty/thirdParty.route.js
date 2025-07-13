@@ -47,4 +47,34 @@ router.post(
 
 
 
+  //////////add facebook page
+  router.post(
+    usersVersion + '/facebook-page',
+    auth.isAuthenticated({
+      // adminOnly: true
+    }),
+    controller.facebookPageWebhook
+  )
+
+  /////////get facebook page list
+  router.get(
+    usersVersion + '/facebook-page',
+    auth.isAuthenticated({
+      // adminOnly: true
+    }),
+    // joiValidate(validationInputs.getFacebookPageList),
+    controller.getFacebookPageList
+  )
+  ////////// uodate facebook page
+  router.put(
+    usersVersion + '/facebook-page/:id',
+    auth.isAuthenticated({
+      // adminOnly: true
+    }),
+    // joiValidate(validationInputs.updateFacebookPage),
+    controller.UpdateFacebookPageList
+  )
+
+
+
 module.exports = router

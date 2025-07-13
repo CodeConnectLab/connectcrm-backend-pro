@@ -38,3 +38,25 @@ exports.facebookLeadGenWebhook = (req, res) => {
         .catch(error => responseHandler.error(res, error, error.message, 500));
 };
 
+exports.facebookPageWebhook = (req, res) => {
+    console.log("🔥 Facebook page webhook POST hit:", JSON.stringify(req.body, null, 2));
+    return service.facebookPageWebhook(req.body, req.user)
+        .then(result => responseHandler.success(res, result, "Facebook page added successfully!", 200))
+        .catch(error => responseHandler.error(res, error, error.message, 500));
+}
+
+exports.getFacebookPageList = (req, res) => {
+    console.log("🔥 Get Facebook page list request received");
+    return service.getFacebookPageList(req.user)
+        .then(result => responseHandler.success(res, result, "Facebook page list retrieved successfully!", 200))
+        .catch(error => responseHandler.error(res, error, error.message, 500));
+}
+
+exports.UpdateFacebookPageList = (req, res) => {
+    console.log("🔥 Get Facebook page details request received for pageId:", req.params.pageId);
+    return service.UpdateFacebookPageList(req.params.pageId,req.body, req.user)
+        .then(result => responseHandler.success(res, result, "Facebook page details retrieved successfully!", 200))
+        .catch(error => responseHandler.error(res, error, error.message, 500));
+}
+
+
