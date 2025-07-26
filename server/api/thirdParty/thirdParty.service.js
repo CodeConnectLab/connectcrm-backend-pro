@@ -301,7 +301,7 @@ if (form_id) {
       email: fieldMap?.email || '',
       city: fieldMap?.city || '', 
       contactNumber: fieldMap.phone_number || '',
-      description: "Lead generated from Facebook",
+      description: "Lead generated from Facebook", 
       followUpDate: new Date(),
     };
 
