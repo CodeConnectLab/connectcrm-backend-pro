@@ -136,6 +136,10 @@ const leadSchema = new mongoose.Schema({
     type: String,
     required: false
   },
+  adName: {
+    type: String,
+    required: false
+  },
   createdAt: {
     type: Date,
     default: Date.now

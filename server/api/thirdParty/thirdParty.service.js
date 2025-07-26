@@ -252,6 +252,28 @@ exports.facebookLeadGenWebhook = async (query, body) => {
     console.log("📋 Lead Data:", fields);
     const fieldMap = Object.fromEntries(fields.map(f => [f.name, f.values?.[0]]));
 console.log("📋 Lead Data:", fieldMap);
+
+     
+let adName = '';
+let campaignName = '';
+
+if (ad_id) {
+  // 1. Get ad details (ad name + campaign id)
+  const adDetailsRes = await axios.get(
+    `https://graph.facebook.com/v23.0/${ad_id}?fields=name,campaign_id&access_token=${ACCESS_TOKEN}`
+  );
+  adName = adDetailsRes.data?.name || '';
+  const campaignId = adDetailsRes.data?.campaign_id;
+
+  // 2. Get campaign name
+  if (campaignId) {
+    const campaignDetailsRes = await axios.get(
+      `https://graph.facebook.com/v23.0/${campaignId}?fields=name&access_token=${ACCESS_TOKEN}`
+    );
+    campaignName = campaignDetailsRes.data?.name || '';
+  }
+}
+
     const leadPayload = {
       fbLeadGenId: leadgen_id,
       fbLeadGenFormId: form_id,
@@ -260,7 +282,8 @@ console.log("📋 Lead Data:", fieldMap);
       leadSource: pageDetails?.leadSource || '67b9761e239b25980850a707', // Default or provided lead source
       leadAddType: "ThirdParty",
       fbCompainName: pageDetails?.pageName || 'Unknown Campaign',
-      campaignName: fieldMap.campaign_name || '', // <-- Add this line
+      campaignName: campaignName || '', // <-- Add this line
+      adName: adName || '', // <-- Add this line
       firstName: fieldMap.full_name || fieldMap.first_name || '',
       email: fieldMap?.email || '',
       city: fieldMap?.city || '', 
