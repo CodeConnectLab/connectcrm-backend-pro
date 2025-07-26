@@ -132,6 +132,10 @@ const leadSchema = new mongoose.Schema({
     type: String,
     required: false
   },
+  campaignName: {
+    type: String,
+    required: false
+  },
   createdAt: {
     type: Date,
     default: Date.now

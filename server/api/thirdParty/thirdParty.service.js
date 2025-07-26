@@ -249,8 +249,9 @@ exports.facebookLeadGenWebhook = async (query, body) => {
 
     // ✅ Create Lead Object
     const fields = leadData?.field_data || [];
+    console.log("📋 Lead Data:", fields);
     const fieldMap = Object.fromEntries(fields.map(f => [f.name, f.values?.[0]]));
-
+console.log("📋 Lead Data:", fieldMap);
     const leadPayload = {
       fbLeadGenId: leadgen_id,
       fbLeadGenFormId: form_id,
@@ -259,6 +260,7 @@ exports.facebookLeadGenWebhook = async (query, body) => {
       leadSource: pageDetails?.leadSource || '67b9761e239b25980850a707', // Default or provided lead source
       leadAddType: "ThirdParty",
       fbCompainName: pageDetails?.pageName || 'Unknown Campaign',
+      campaignName: fieldMap.campaign_name || '', // <-- Add this line
       firstName: fieldMap.full_name || fieldMap.first_name || '',
       email: fieldMap?.email || '',
       city: fieldMap?.city || '', 
