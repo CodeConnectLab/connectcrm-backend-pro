@@ -262,6 +262,7 @@ if (ad_id) {
   const adDetailsRes = await axios.get(
     `https://graph.facebook.com/v23.0/${ad_id}?fields=name,campaign_id&access_token=${ACCESS_TOKEN}`
   );
+  console.log("📋 Ad Details:", adDetailsRes.data);
   adName = adDetailsRes.data?.name || '';
   const campaignId = adDetailsRes.data?.campaign_id;
 
@@ -274,6 +275,18 @@ if (ad_id) {
   }
 }
 
+let formName = '';
+if (form_id) {
+  try {
+    const formRes = await axios.get(
+      `https://graph.facebook.com/v23.0/${form_id}?fields=name&access_token=${ACCESS_TOKEN}`
+    );
+    formName = formRes.data?.name || '';
+  } catch (e) {
+    formName = '';
+  }
+}
+
     const leadPayload = {
       fbLeadGenId: leadgen_id,
       fbLeadGenFormId: form_id,
@@ -283,7 +296,7 @@ if (ad_id) {
       leadAddType: "ThirdParty",
       fbCompainName: pageDetails?.pageName || 'Unknown Campaign',
       campaignName: campaignName || '', // <-- Add this line
-      adName: adName || '', // <-- Add this line
+      adName: formName || '', // <-- Add this line
       firstName: fieldMap.full_name || fieldMap.first_name || '',
       email: fieldMap?.email || '',
       city: fieldMap?.city || '', 
