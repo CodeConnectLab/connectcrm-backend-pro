@@ -24,7 +24,6 @@ exports.getCalendarData=async({},user)=>{
     
 }
 
-
 exports.getDashboardMetrics = async ({ leadAccessFilter },params, user) => {
     try {
       const { startDate, endDate } = params
@@ -726,27 +725,75 @@ const leadSourceMetricsss = async (leadAccessFilter,start, end, user) => {
         companyId: user.companyId
       }
 
+       const rolemap={
+        'Team Leader': 'assignedTL',
+        'AGM': 'assignedAGM',
+        'GM': 'assignedGM',
+        'AVP': 'assignedAVP',
+        'VP': 'assignedVP',
+        'AS': 'assignedAS',
+        'Vertical': 'assignedVertical',
+        'AD': 'assignedAD',
+       }
+module.exports = {
+    VERTICAL: "Vertical",
+    AD: "AD",
+    VP: "VP",
+    AVP: "AVP",
+    GM: "GM",
+    AGM: "AGM",
+    TEAM_ADMIN: "Team Leader",
+
+    SR_PORTFOLIO_MANAGER: "Sr. Portfolio Manager",
+    PORTFOLIO_MANAGER: "Portfolio Manager",
+    AS_PORTFOLIO_MANAGER: "As. Portfolio Manager",
+    SR_BDE: "Sr. BDE",
+    BDE: "BDE",
+
+    USER: "Employee"
+  };
       // Add user filter based on role
+      // if (user.role !== userRoles.SUPER_ADMIN) {
+      //   if (user.role === userRoles.TEAM_ADMIN) {
+      //     // For Team Leader - show their own data AND their team members' data
+      //     const query = {
+      //       $or: [
+      //         { assignedAgent: user._id }, // TL's own assignments
+      //         {
+      //           assignedAgent: {
+      //             $in: await UserModel.distinct('_id', { assignedTL: user._id })
+      //           }
+      //         } // Team members' assignments
+      //       ]
+      //     }
+      //     baseQuery = { ...baseQuery, ...query }
+      //    // previousQuery = { ...previousQuery, ...query }
+      //   } else {
+      //     // For regular users - only show their own data
+      //     baseQuery.assignedAgent = user._id
+      //    // previousQuery.assignedAgent = user._id
+      //   }
+      // }
+
       if (user.role !== userRoles.SUPER_ADMIN) {
-        if (user.role === userRoles.TEAM_ADMIN) {
-          // For Team Leader - show their own data AND their team members' data
-          const query = {
-            $or: [
-              { assignedAgent: user._id }, // TL's own assignments
-              {
-                assignedAgent: {
-                  $in: await UserModel.distinct('_id', { assignedTL: user._id })
-                }
-              } // Team members' assignments
-            ]
-          }
-          baseQuery = { ...baseQuery, ...query }
-         // previousQuery = { ...previousQuery, ...query }
-        } else {
-          // For regular users - only show their own data
+        /////  match this user id with any one of the assigned fields id not role to field map
+          baseQuery.assignedTL = user._id
+          baseQuery.assignedAGM = user._id
+          baseQuery.assignedGM = user._id
+          baseQuery.assignedAVP = user._id
+          baseQuery.assignedVP = user._id
+          baseQuery.assignedAS = user._id
+          baseQuery.assignedAD = user._id
+          baseQuery.assignedVertical = user._id
           baseQuery.assignedAgent = user._id
-         // previousQuery.assignedAgent = user._id
-        }
+          baseQuery.assignedPortfolioManager = user._id
+          baseQuery.assignedSrPortfolioManager = user._id
+          baseQuery.assignedAsPortfolioManager = user._id
+          baseQuery.assignedSrBDE = user._id
+          baseQuery.assignedBDE = user._id
+
+
+
       }
 
       // Get won and loss status IDs
