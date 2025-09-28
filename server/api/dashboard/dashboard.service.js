@@ -56,6 +56,7 @@ exports.getDashboardMetrics = async ({ leadAccessFilter },params, user) => {
         leadSourceMetricss,
         paymentOverview,
         employeePerformance,
+        totalEmployees: employeePerformance.length,
         androidVersion : "v1.0.1",
         iosversion : "v1.0.0",
         mobileApkDownlodeLink:'https://crm.page.codeconnect.in/app-download',
@@ -718,7 +719,7 @@ const leadSourceMetricsss = async (leadAccessFilter,start, end, user) => {
   }
 
  
-  const getEmployeePerformance = async (start, end, user) => {
+  const getEmployeePerformance1 = async (start, end, user) => {
     try {
       // Base query
       let baseQuery = {
@@ -749,31 +750,84 @@ const leadSourceMetricsss = async (leadAccessFilter,start, end, user) => {
       //   }
       // }
 
-     if (user.role !== userRoles.SUPER_ADMIN) {
-  const assignedFields = [
-    "assignedAD",
-    "assignedAGM",
-    "assignedGM",
-    "assignedAVP",
-    "assignedVP",
-    "assignedVertical",
-    "assignedSRPORTFOLIOMANAGER",
-    "assignedPORTFOLIOMANAGER",
-    "assignedASPORTFOLIOMANAGER",
-    "assignedSRBDE",
-    "assignedBDE",
-    "assignedTL",
-    "assignedAgent"
-  ]
+      // if (user.role !== userRoles.SUPER_ADMIN) {
+      //   const assignedFields = [
+      //     "assignedAD",
+      //     "assignedAGM",
+      //     "assignedGM",
+      //     "assignedAVP",
+      //     "assignedVP",
+      //     "assignedVertical",
+      //     "assignedSRPORTFOLIOMANAGER",
+      //     "assignedPORTFOLIOMANAGER",
+      //     "assignedASPORTFOLIOMANAGER",
+      //     "assignedSRBDE",
+      //     "assignedBDE",
+      //     "assignedTL",
+      //     "assignedAgent"
+      //   ]
 
-  baseQuery.$or = assignedFields.map(field => ({ [field]: user._id }))
-}
+      //   baseQuery.$or = assignedFields.map(field => ({ [field]: user._id }))
+      // }
 
-console.log("Base Query:", JSON.stringify(baseQuery, null, 2))
+//       if (user.role !== userRoles.SUPER_ADMIN) {
+//   const assignedFields = [
+//     "assignedAD",
+//     "assignedAGM",
+//     "assignedGM",
+//     "assignedAVP",
+//     "assignedVP",
+//     "assignedVertical",
+//     "assignedSRPORTFOLIOMANAGER",
+//     "assignedPORTFOLIOMANAGER",
+//     "assignedASPORTFOLIOMANAGER",
+//     "assignedSRBDE",
+//     "assignedBDE",
+//     "assignedTL",
+//     "assignedAgent"
+//   ];
+
+//   let orConditions = assignedFields.map(field => ({ [field]: user._id }));
+
+//   // Define which field represents the "directly assigned users" for this role
+//   const roleToFieldMap = {
+//     TEAM_ADMIN: "assignedTL",
+//     USER: "assignedAgent",
+//     BDE: "assignedBDE",
+//     SRBDE: "assignedSRBDE",
+//     ASPORTFOLIOMANAGER: "assignedASPORTFOLIOMANAGER",
+//     PORTFOLIOMANAGER: "assignedPORTFOLIOMANAGER",
+//     SRPORTFOLIOMANAGER: "assignedSRPORTFOLIOMANAGER",
+//     VERTICAL: "assignedVertical",
+//     VP: "assignedVP",
+//     AVP: "assignedAVP",
+//     GM: "assignedGM",
+//     AGM: "assignedAGM",
+//     AD: "assignedAD"
+//   };
+
+//   const assignedFieldForRole = roleToFieldMap[user.role];
+
+//   if (assignedFieldForRole) {
+//     // Find all users assigned directly under this user
+//     const subordinateIds = await UserModel.distinct("_id", { [assignedFieldForRole]: user._id });
+
+//     if (subordinateIds.length > 0) {
+//       orConditions.push({ assignedAgent: { $in: subordinateIds } });
+//     }
+//   }
+
+//   baseQuery = { ...baseQuery, $or: orConditions };
+// }
+
+
+// console.log("Base Query:", JSON.stringify(baseQuery, null, 2))
 
 
 
       // Get won and loss status IDs
+      
+      
       const [wonStatusIds, lossStatusIds] = await Promise.all([
         LeadStatusModel.find({
           companyId: user.companyId,
@@ -933,3 +987,367 @@ console.log("Base Query:", JSON.stringify(baseQuery, null, 2))
       throw error
     }
   }
+
+  const getEmployeePerformance2 = async (start, end, user) => {
+  try {
+    // Base query for company
+    let baseQuery = { companyId: user.companyId };
+
+    // SUPER_ADMIN sees everything
+    if (user.role !== 'Super Admin') {
+      const assignedFields = [
+        "assignedAD",
+        "assignedAGM",
+        "assignedGM",
+        "assignedAVP",
+        "assignedVP",
+        "assignedVertical",
+        "assignedSRPORTFOLIOMANAGER",
+        "assignedPORTFOLIOMANAGER",
+        "assignedASPORTFOLIOMANAGER",
+        "assignedSRBDE",
+        "assignedBDE",
+        "assignedTL",
+        "assignedAgent"
+      ];
+
+      // Map roles to the field that assigns subordinates
+      const roleToFieldMap = {
+        'Team Leader': 'assignedTL',
+        'Employee': 'assignedAgent',
+        'BDE': 'assignedBDE',
+        'Sr. BDE': 'assignedSRBDE',
+        'As. Portfolio Manager': 'assignedASPORTFOLIOMANAGER',
+        'Portfolio Manager': 'assignedPORTFOLIOMANAGER',
+        'Sr. Portfolio Manager': 'assignedSRPORTFOLIOMANAGER',
+        'Vertical': 'assignedVertical',
+        'VP': 'assignedVP',
+        'AVP': 'assignedAVP',
+        'GM': 'assignedGM',
+        'AGM': 'assignedAGM',
+        'AD': 'assignedAD'
+      };
+
+      const getAllSubordinateIds = async (userId) => {
+        // Recursively fetch all subordinate IDs
+        const subIds = [];
+        const directIds = await UserModel.distinct('_id', {
+          $or: assignedFields.map(field => ({ [field]: userId }))
+        });
+
+        for (const id of directIds) {
+          subIds.push(id);
+          const deeperIds = await getAllSubordinateIds(id);
+          subIds.push(...deeperIds);
+        }
+
+        return subIds;
+      };
+
+      // Fetch subordinates recursively
+      const subordinateIds = await getAllSubordinateIds(user._id);
+
+      // User sees own leads + all subordinate leads
+      baseQuery.$or = [
+        { assignedAgent: user._id },
+        { assignedAgent: { $in: subordinateIds } }
+      ];
+    }
+
+    // Filter by date range if provided
+    // if (start && end) {
+    //   baseQuery.createdAt = { $gte: new Date(start), $lte: new Date(end) };
+    // }
+
+    // Get won and loss status IDs
+    const [wonStatusIds, lossStatusIds] = await Promise.all([
+      LeadStatusModel.find({ companyId: user.companyId, wonStatus: true }).distinct('_id'),
+      LeadStatusModel.find({ companyId: user.companyId, lossStatus: true }).distinct('_id')
+    ]);
+
+    // Aggregate employee performance
+    const performanceMetrics = await LeadModel.aggregate([
+      { $match: baseQuery },
+      {
+        $group: {
+          _id: '$assignedAgent',
+          leads: { $push: '$$ROOT' },
+          assignedLeads: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'userInfo'
+        }
+      },
+      { $unwind: '$userInfo' },
+      {
+        $addFields: {
+          closedLeads: {
+            $size: {
+              $filter: {
+                input: '$leads',
+                as: 'lead',
+                cond: {
+                  $or: [
+                    { $in: ['$$lead.leadStatus', wonStatusIds] },
+                    { $in: ['$$lead.leadStatus', lossStatusIds] }
+                  ]
+                }
+              }
+            }
+          },
+          openLeads: {
+            $size: {
+              $filter: {
+                input: '$leads',
+                as: 'lead',
+                cond: {
+                  $and: [
+                    { $not: [{ $in: ['$$lead.leadStatus', wonStatusIds] }] },
+                    { $not: [{ $in: ['$$lead.leadStatus', lossStatusIds] }] }
+                  ]
+                }
+              }
+            }
+          },
+          failedLeads: {
+            $size: {
+              $filter: {
+                input: '$leads',
+                as: 'lead',
+                cond: { $in: ['$$lead.leadStatus', lossStatusIds] }
+              }
+            }
+          },
+          wonLeads: {
+            $size: {
+              $filter: {
+                input: '$leads',
+                as: 'lead',
+                cond: { $in: ['$$lead.leadStatus', wonStatusIds] }
+              }
+            }
+          },
+          totalRevenue: {
+            $sum: {
+              $cond: [
+                { $in: ['$leadStatus', wonStatusIds] },
+                { $ifNull: ['$leadWonAmount', 0] },
+                0
+              ]
+            }
+          }
+        }
+      },
+      {
+        $addFields: {
+          conversion: {
+            $cond: [
+              { $eq: ['$assignedLeads', 0] },
+              0,
+              {
+                $multiply: [
+                  { $divide: ['$wonLeads', '$assignedLeads'] },
+                  100
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          agent: '$userInfo.name',
+          assignedLeads: 1,
+          closed: '$closedLeads',
+          open: '$openLeads',
+          failed: '$failedLeads',
+          totalRevenue: 1,
+          conversion: { $toString: { $round: ['$conversion', 2] } },
+          isOnline: { $ifNull: ['$userInfo.isOnline', false] }
+        }
+      },
+      { $sort: { assignedLeads: -1 } }
+    ]);
+
+    // Format revenue and conversion
+    return performanceMetrics.map(metric => ({
+      ...metric,
+      revenue: `${metric.totalRevenue}`,
+      conversion: `${metric.conversion}%`
+    }));
+
+  } catch (error) {
+    console.error('Error in getEmployeePerformance:', error);
+    throw error;
+  }
+};
+const mongoose = require('mongoose');
+const getEmployeePerformance = async (start, end, user) => {
+  try {
+    // Step 1: Get all subordinate IDs including self
+    const roleToFieldMap = {
+      'Team Leader': 'assignedTL',
+      'Employee': 'assignedAgent',
+      'BDE': 'assignedBDE',
+      'Sr. BDE': 'assignedSRBDE',
+      'As. Portfolio Manager': 'assignedASPORTFOLIOMANAGER',
+      'Portfolio Manager': 'assignedPORTFOLIOMANAGER',
+      'Sr. Portfolio Manager': 'assignedSRPORTFOLIOMANAGER',
+      'Vertical': 'assignedVertical',
+      'VP': 'assignedVP',
+      'AVP': 'assignedAVP',
+      'GM': 'assignedGM',
+      'AGM': 'assignedAGM',
+      'AD': 'assignedAD'
+    };
+
+    const getSubordinateIds = async (userId, role) => {
+      const field = roleToFieldMap[role];
+      if (!field) return [];
+
+      const directSubs = await UserModel.find({ [field]: userId }, '_id role').lean();
+      const ids = directSubs.map(u => u._id.toString());
+
+      const allSubs = [...ids];
+      for (const sub of directSubs) {
+        const deeperSubs = await getSubordinateIds(sub._id, sub.role);
+        allSubs.push(...deeperSubs);
+      }
+      return allSubs;
+    };
+
+    let userIds = [];
+    if (user.role === 'Super Admin') {
+      const allUsers = await UserModel.find({ companyId: user.companyId }, '_id').lean();
+      userIds = allUsers.map(u => u._id.toString());
+    } else {
+      const subordinateIds = await getSubordinateIds(user._id, user.role);
+      userIds = [user._id.toString(), ...subordinateIds];
+    }
+
+    // Step 2: Get won/loss status IDs
+    const [wonStatusIds, lossStatusIds] = await Promise.all([
+      LeadStatusModel.find({ companyId: user.companyId, wonStatus: true }).distinct('_id'),
+      LeadStatusModel.find({ companyId: user.companyId, lossStatus: true }).distinct('_id')
+    ]);
+
+    // Step 3: Aggregate leads per user using LEFT JOIN approach
+    const performanceMetrics = await UserModel.aggregate([
+      { $match: { _id: { $in: userIds.map(id => new mongoose.Types.ObjectId(id)) } } },
+      {
+        $lookup: {
+          from: 'leads',
+          localField: '_id',
+          foreignField: 'assignedAgent',
+          as: 'leads'
+        }
+      },
+      {
+        $addFields: {
+          assignedLeads: { $size: '$leads' },
+          closedLeads: {
+            $size: {
+              $filter: {
+                input: '$leads',
+                as: 'lead',
+                cond: { $or: [
+                  { $in: ['$$lead.leadStatus', wonStatusIds] },
+                  { $in: ['$$lead.leadStatus', lossStatusIds] }
+                ]}
+              }
+            }
+          },
+          openLeads: {
+            $size: {
+              $filter: {
+                input: '$leads',
+                as: 'lead',
+                cond: { $and: [
+                  { $not: [{ $in: ['$$lead.leadStatus', wonStatusIds] }] },
+                  { $not: [{ $in: ['$$lead.leadStatus', lossStatusIds] }] }
+                ]}
+              }
+            }
+          },
+          failedLeads: {
+            $size: {
+              $filter: {
+                input: '$leads',
+                as: 'lead',
+                cond: { $in: ['$$lead.leadStatus', lossStatusIds] }
+              }
+            }
+          },
+          wonLeads: {
+            $size: {
+              $filter: {
+                input: '$leads',
+                as: 'lead',
+                cond: { $in: ['$$lead.leadStatus', wonStatusIds] }
+              }
+            }
+          },
+          totalRevenue: {
+            $sum: {
+              $map: {
+                input: '$leads',
+                as: 'lead',
+                in: {
+                  $cond: [
+                    { $in: ['$$lead.leadStatus', wonStatusIds] },
+                    { $ifNull: ['$$lead.leadWonAmount', 0] },
+                    0
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        $addFields: {
+          conversion: {
+            $cond: [
+              { $eq: ['$assignedLeads', 0] },
+              0,
+              { $multiply: [{ $divide: ['$wonLeads', '$assignedLeads'] }, 100] }
+            ]
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          agent: '$name',
+          assignedLeads: 1,
+          closed: '$closedLeads',
+          open: '$openLeads',
+          failed: '$failedLeads',
+          totalRevenue: 1,
+          conversion: { $toString: { $round: ['$conversion', 2] } },
+          isOnline: { $ifNull: ['$isOnline', false] }
+        }
+      },
+      { $sort: { assignedLeads: -1 } }
+    ]);
+
+    // Format revenue and conversion
+    return performanceMetrics.map(metric => ({
+      ...metric,
+      revenue: `${metric.totalRevenue}`,
+      conversion: `${metric.conversion}%`
+    }));
+
+  } catch (error) {
+    console.error('Error in getEmployeePerformance:', error);
+    throw error;
+  }
+};
+
+
