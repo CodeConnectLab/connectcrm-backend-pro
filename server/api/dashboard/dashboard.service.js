@@ -725,33 +725,7 @@ const leadSourceMetricsss = async (leadAccessFilter,start, end, user) => {
         companyId: user.companyId
       }
 
-       const rolemap={
-        'Team Leader': 'assignedTL',
-        'AGM': 'assignedAGM',
-        'GM': 'assignedGM',
-        'AVP': 'assignedAVP',
-        'VP': 'assignedVP',
-        'AS': 'assignedAS',
-        'Vertical': 'assignedVertical',
-        'AD': 'assignedAD',
-       }
-module.exports = {
-    VERTICAL: "Vertical",
-    AD: "AD",
-    VP: "VP",
-    AVP: "AVP",
-    GM: "GM",
-    AGM: "AGM",
-    TEAM_ADMIN: "Team Leader",
-
-    SR_PORTFOLIO_MANAGER: "Sr. Portfolio Manager",
-    PORTFOLIO_MANAGER: "Portfolio Manager",
-    AS_PORTFOLIO_MANAGER: "As. Portfolio Manager",
-    SR_BDE: "Sr. BDE",
-    BDE: "BDE",
-
-    USER: "Employee"
-  };
+      
       // Add user filter based on role
       // if (user.role !== userRoles.SUPER_ADMIN) {
       //   if (user.role === userRoles.TEAM_ADMIN) {
@@ -776,25 +750,24 @@ module.exports = {
       // }
 
       if (user.role !== userRoles.SUPER_ADMIN) {
-        /////  match this user id with any one of the assigned fields id not role to field map
-          baseQuery.assignedTL = user._id
-          baseQuery.assignedAGM = user._id
-          baseQuery.assignedGM = user._id
-          baseQuery.assignedAVP = user._id
-          baseQuery.assignedVP = user._id
-          baseQuery.assignedAS = user._id
-          baseQuery.assignedAD = user._id
-          baseQuery.assignedVertical = user._id
-          baseQuery.assignedAgent = user._id
-          baseQuery.assignedPortfolioManager = user._id
-          baseQuery.assignedSrPortfolioManager = user._id
-          baseQuery.assignedAsPortfolioManager = user._id
-          baseQuery.assignedSrBDE = user._id
-          baseQuery.assignedBDE = user._id
-
-
-
+        baseQuery.$or = [
+          { assignedTL: user._id },
+          { assignedAGM: user._id },
+          { assignedGM: user._id },
+          { assignedAVP: user._id },
+          { assignedVP: user._id },
+          { assignedAS: user._id },
+          { assignedAD: user._id },
+          { assignedVertical: user._id },
+          { assignedAgent: user._id },
+          { assignedPortfolioManager: user._id },
+          { assignedSrPortfolioManager: user._id },
+          { assignedAsPortfolioManager: user._id },
+          { assignedSrBDE: user._id },
+          { assignedBDE: user._id }
+        ]
       }
+
 
       // Get won and loss status IDs
       const [wonStatusIds, lossStatusIds] = await Promise.all([
