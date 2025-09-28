@@ -749,7 +749,7 @@ const leadSourceMetricsss = async (leadAccessFilter,start, end, user) => {
       //   }
       // }
 
-      if (user.role !== userRoles.SUPER_ADMIN) {
+     if (user.role !== userRoles.SUPER_ADMIN) {
   const assignedFields = [
     "assignedAD",
     "assignedAGM",
@@ -768,6 +768,8 @@ const leadSourceMetricsss = async (leadAccessFilter,start, end, user) => {
 
   baseQuery.$or = assignedFields.map(field => ({ [field]: user._id }))
 }
+
+console.log("Base Query:", JSON.stringify(baseQuery, null, 2))
 
 
 
