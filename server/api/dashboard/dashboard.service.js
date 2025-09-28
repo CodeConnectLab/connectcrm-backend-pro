@@ -750,23 +750,25 @@ const leadSourceMetricsss = async (leadAccessFilter,start, end, user) => {
       // }
 
       if (user.role !== userRoles.SUPER_ADMIN) {
-        baseQuery.$or = [
-          { assignedTL: user._id },
-          { assignedAGM: user._id },
-          { assignedGM: user._id },
-          { assignedAVP: user._id },
-          { assignedVP: user._id },
-          { assignedAS: user._id },
-          { assignedAD: user._id },
-          { assignedVertical: user._id },
-          { assignedAgent: user._id },
-          { assignedPortfolioManager: user._id },
-          { assignedSrPortfolioManager: user._id },
-          { assignedAsPortfolioManager: user._id },
-          { assignedSrBDE: user._id },
-          { assignedBDE: user._id }
-        ]
-      }
+  const assignedFields = [
+    "assignedAD",
+    "assignedAGM",
+    "assignedGM",
+    "assignedAVP",
+    "assignedVP",
+    "assignedVertical",
+    "assignedSRPORTFOLIOMANAGER",
+    "assignedPORTFOLIOMANAGER",
+    "assignedASPORTFOLIOMANAGER",
+    "assignedSRBDE",
+    "assignedBDE",
+    "assignedTL",
+    "assignedAgent"
+  ]
+
+  baseQuery.$or = assignedFields.map(field => ({ [field]: user._id }))
+}
+
 
 
       // Get won and loss status IDs
