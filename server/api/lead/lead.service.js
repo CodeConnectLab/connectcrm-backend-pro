@@ -1181,6 +1181,7 @@ exports.bulkUpdateLeads = async (data, user) => {
         const updateData = {};
         if (assignedAgent) updateData.assignedAgent = new Types.ObjectId(assignedAgent);
         if (leadStatus) updateData.leadStatus = new Types.ObjectId(leadStatus);
+        updateData.leadUpdated=true;
 
         // Update multiple documents
         const result = await Lead.updateMany(
