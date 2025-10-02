@@ -88,7 +88,7 @@ exports.getAllOutsourcedLeadsByCompany = (req, res) => {
     productService: req.query.productService,
     startDate: req.query.startDate,
     endDate: req.query.endDate,
-    sortBy: 'followUpDate',
+    sortBy: 'createdAt',
     sortOrder: 'asc'
   };
   return service.getAllOutsourcedLeadsByCompany({ leadAccessFilter: req.leadAccessFilter },queryParams, req.user)
