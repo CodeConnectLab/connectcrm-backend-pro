@@ -89,7 +89,7 @@ exports.getAllOutsourcedLeadsByCompany = (req, res) => {
     startDate: req.query.startDate,
     endDate: req.query.endDate,
     sortBy: 'createdAt',
-    sortOrder: 'asc'
+    sortOrder: 'desc'
   };
   return service.getAllOutsourcedLeadsByCompany({ leadAccessFilter: req.leadAccessFilter },queryParams, req.user)
     .then(result =>responseHandler.success1(res, result, "Leads retrieved successfully!", 200))
