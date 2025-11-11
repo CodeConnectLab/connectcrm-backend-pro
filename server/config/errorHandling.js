@@ -21,7 +21,7 @@ module.exports = function (app, config) {
             let locals = {
                 error: err
             }
-            mailer.sendMail('error', config.exceptionEmailID, locals);
+            //mailer.sendMail('error', config.exceptionEmailID, locals);
         });
     }
     //In case of development or test environment 
@@ -34,7 +34,7 @@ module.exports = function (app, config) {
                     p: p
                 }
             }
-            console.log(locals)
+            //console.log(locals)
 
             // mailer.sendMail('error', config.exceptionEmailID, locals);
         });
@@ -43,7 +43,7 @@ module.exports = function (app, config) {
             let locals = {
                 error: err
             }
-            console.log("custome", locals)
+            //console.log("custome", locals)
             // mailer.sendMail('error', config.exceptionEmailID, locals);
         });
     }

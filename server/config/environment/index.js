@@ -12,8 +12,8 @@ function requiredProcessEnv(name) {
 // All configurations will extend these options
 // ============================================
 let all = {
-	projectName: "YogaRise",
-	websiteName: "YogaRise",
+	projectName: "RedKaize CRM",
+	websiteName: "RedKaize CRM",
 
 	env: process.env.NODE_ENV,
 
