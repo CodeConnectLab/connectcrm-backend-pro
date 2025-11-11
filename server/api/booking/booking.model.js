@@ -49,8 +49,10 @@ const bookingSchema = new mongoose.Schema({
   GST: { type: Number, required: true,default: 0 },
   OtherCharges: { type: Number, default: 0 },
   OtherGST: { type: Number, default: 0 },
-  PCL: { type: Number, required: true,default: 0 },
-  PCLGST: { type: Number, required: true,default: 0 },
+  positioningCharges : { type: Number, default: 0 },
+  positioningGST: { type: Number, default: 0 },
+  PLC: { type: Number, required: true,default: 0 },
+  PLCGST: { type: Number, required: true,default: 0 },
   TSP: { type: Number, required: true ,default: 0},
   totalReceived: { type: Number, default: 0 },
   //////chanel partner

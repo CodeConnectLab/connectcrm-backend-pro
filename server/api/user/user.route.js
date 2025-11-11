@@ -181,6 +181,14 @@ router.put(
 
 /////////////// get user by tree
 router.get(
+  usersVersion + "/users/subordinates-overview",
+  auth.isAuthenticated({
+    // adminOnly: true
+  }),
+  controller.getSubordinatesOverview
+)
+
+router.get(
   usersVersion + "/get-user-tree/:id",
   auth.isAuthenticated({
     // adminOnly: true

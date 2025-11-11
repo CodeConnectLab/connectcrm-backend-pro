@@ -18,11 +18,13 @@ exports.addBooking = async (body, user, res) => {
             BSP,
             GST,
             OtherCharges,
+            positioningCharges,
+            positioningGST,
             TSP,
             totalReceived,
             OtherGST,
-            PCL,
-            PCLGST,
+            PLC,
+            PLCGST,
             GrossRevenue,
             CpRevenue,
             Discount,
@@ -33,7 +35,8 @@ exports.addBooking = async (body, user, res) => {
             bookingStatus,
         } = body;
 
-        if (!customer || !projectName || !email || !contactName || !bookingDate || !unit || !size || !TSP) {
+        if (!customer || !projectName || !email || !contactName ||
+             !bookingDate || !unit || !size || !TSP) {
             return res.status(400).json({ message: 'Required fields are missing' });
         }
 
@@ -52,12 +55,14 @@ exports.addBooking = async (body, user, res) => {
             BSP,
             GST,
             OtherCharges,
+            positioningCharges,
+            positioningGST,
             TSP,
             totalReceived,
             OtherGST,
             updatedStatus:true,
-            PCL,
-            PCLGST,
+            PLC,
+            PLCGST,
             GrossRevenue,
             CpRevenue,
             Discount,
@@ -79,7 +84,7 @@ exports.updateBooking = async (bookingId, body, user) => {
     try {
         const { customer, projectName, email, contactName, bookingDate,
             RM, unit, size, reference, paymentDetails, BSP, GST,
-            OtherCharges, TSP, totalReceived,OtherGST,PCL,PCLGST,
+            OtherCharges, TSP, totalReceived,OtherGST,PLC, PLCGST,positioningCharges,positioningGST,
             GrossRevenue,CpRevenue,Discount,netRevenue, remark,
             bookingStatus } = body;
         const updatedBooking = await BookingModel.findOneAndUpdate(
@@ -102,8 +107,10 @@ exports.updateBooking = async (bookingId, body, user) => {
                 TSP,
                 totalReceived,
                 OtherGST,
-                PCL,
-                PCLGST,
+                positioningCharges,
+                positioningGST,
+                PLC,
+                PLCGST,
                 GrossRevenue,
                 CpRevenue,
                 Discount,

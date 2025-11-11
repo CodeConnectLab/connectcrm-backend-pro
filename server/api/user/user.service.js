@@ -19,6 +19,8 @@ const AWS = require('aws-sdk')
 const { getPresignedUrl } = require('../../helpers/aws-s3.helper')
 const { error } = require('console')
 const userRoles = require('../../config/constants/userRoles')
+const { getDescendantRoles } = require('../../config/constants/roleHierarchyMap')
+const { getSubordinateHierarchy } = require('../../utility/getAllSubordinateUserIds')
 const { uploadToS3 } = require('../../helpers/aws-s3.helper');
 ///
 
@@ -515,6 +517,32 @@ exports.getUserTree = async (userId, user) => {
     throw new Error('Internal server error');
   }
 }
+
+exports.getSubordinatesOverview = async (user) => {
+  try {
+    const currentUser = await UserModel.findById(user._id)
+      .select('_id name role companyId')
+      .lean();
+
+    if (!currentUser) {
+      throw new Error('User not found');
+    }
+
+    const hierarchyData = await getSubordinateHierarchy({
+      userId: currentUser._id,
+      role: currentUser.role,
+      companyId: currentUser.companyId,
+    });
+
+    return {
+      user: currentUser,
+      descendantRoles: getDescendantRoles(currentUser.role),
+      ...hierarchyData
+    };
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
 
 //////////  user list
 

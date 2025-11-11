@@ -89,6 +89,12 @@ exports.getUserTree = (req, res, next) => {
         .then(result => responseHandler.success(res, result, "User tree fetch successful!", 200))
         .catch(error => responseHandler.error(res, error, error.message, 500));
 }
+
+exports.getSubordinatesOverview = (req, res, next) => {
+    return service.getSubordinatesOverview(req.user)
+        .then(result => responseHandler.success(res, result, "Subordinate hierarchy fetch successful!", 200))
+        .catch(error => responseHandler.error(res, error, error.message, 500));
+}
 // exports.listSupport = (req, res, next) => {
 //     return service.listUsers({ role: USER_ROLES.SUPPORT }, req.user)
 //         .then(result => responseHandler.success(res, result, "Support fetch successful!", 200))

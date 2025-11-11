@@ -125,11 +125,13 @@ const topMetricss = async (leadAccessFilter,start, end, user) => {
   }).distinct('_id')
 
   // Get OutSourced status IDs
-  const OutSourcedStatusIds = await LeadStatusModel.find({
+  let OutSourcedStatusIds = await LeadStatusModel.find({
     companyId: user.companyId,
     showOutSourced: true,
   }).distinct('_id')
-
+  // add one Id also for OutSourcedStatusIds
+  // OutSourcedStatusIds.push(new mongoose.Types.ObjectId('67b9761e239b25980850a707'));
+  // console.log('OutSourcedStatusIds', OutSourcedStatusIds);
   // Fetch all metrics in parallel
   const [
     currentLeads,
@@ -158,16 +160,24 @@ const topMetricss = async (leadAccessFilter,start, end, user) => {
     }),
 
     // Imported Leads
-    LeadModel.countDocuments({ ...baseQuery, leadAddType: 'Import', leadUpdated:false, leadStatus: { $in: importedStatusIds } }),
-    LeadModel.countDocuments({ ...previousQuery, leadAddType: 'Import', leadUpdated:false, leadStatus: { $in: importedStatusIds } }),
+    LeadModel.countDocuments({ ...baseQuery, leadAddType:
+       'Import', leadUpdated:false, leadStatus: { $in: importedStatusIds } }),
+    LeadModel.countDocuments({ ...previousQuery, leadAddType:
+       'Import', leadUpdated:false, leadStatus: { $in: importedStatusIds } }),
 
     // Outsourced Leads
-    LeadModel.countDocuments({ ...baseQuery, leadAddType: 'ThirdParty', leadUpdated:false, leadStatus: { $in: OutSourcedStatusIds } }),
+    LeadModel.countDocuments({ ...baseQuery, 
+      leadAddType: 'ThirdParty', 
+      leadUpdated:false,
+      leadSource : new mongoose.Types.ObjectId('67b9761e239b25980850a707')
+      //  leadStatus: { $in: OutSourcedStatusIds } 
+      }),
     LeadModel.countDocuments({
       ...previousQuery,
       leadAddType: 'ThirdParty',
       leadUpdated:false,
-      leadStatus: { $in: OutSourcedStatusIds }
+      leadSource : new mongoose.Types.ObjectId('67b9761e239b25980850a707')
+    //  leadStatus: { $in: OutSourcedStatusIds }
     })
   ])
 
@@ -184,12 +194,15 @@ const topMetricss = async (leadAccessFilter,start, end, user) => {
 
   return (data = [
     {
-      value: formatNumber(currentLeads),
-      change: calculatePercentageChange(currentLeads, previousLeads),
-      title: 'All Leads',
-      color: '#2AFF04',
-      webroute: 'https://crm.codeconnect.in/leads/all',
-      deeplink: 'alllead'
+      value: formatNumber(outsourcedLeads),
+      change: calculatePercentageChange(
+        outsourcedLeads,
+        previousOutsourcedLeads
+      ),
+      title: 'New Leads',
+      color: '#0804ff',
+      webroute: 'https://crm.codeconnect.in/leads/outsourced-leads',
+      deeplink: 'allOutsourceLeads'
     },
     {
       value: formatNumber(followupLeads),
@@ -208,16 +221,13 @@ const topMetricss = async (leadAccessFilter,start, end, user) => {
       deeplink: 'allImportedLeads'
     },
     {
-      value: formatNumber(outsourcedLeads),
-      change: calculatePercentageChange(
-        outsourcedLeads,
-        previousOutsourcedLeads
-      ),
-      title: 'All Outsource Leads',
-      color: '#0804ff',
-      webroute: 'https://crm.codeconnect.in/leads/outsourced-leads',
-      deeplink: 'allOutsourceLeads'
-    }
+      value: formatNumber(currentLeads),
+      change: calculatePercentageChange(currentLeads, previousLeads),
+      title: 'All Leads',
+      color: '#2AFF04',
+      webroute: 'https://crm.codeconnect.in/leads/all',
+      deeplink: 'alllead'
+    },
   ])
 }
 

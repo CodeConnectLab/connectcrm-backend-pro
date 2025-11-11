@@ -1,25 +1,9 @@
 const User = require('../api/user/user.model');
 const {userRoles} = require('../config/constants');
-
-const roleToField = {
-  [userRoles.VERTICAL]: 'assignedVertical',
-  [userRoles.AD]: 'assignedAD',
-  [userRoles.VP]: 'assignedVP',
-  [userRoles.AVP]: 'assignedAVP',
-  [userRoles.GM]: 'assignedGM',
-  [userRoles.AGM]: 'assignedAGM',
-  [userRoles.TEAM_ADMIN]: 'assignedTL',
-  ////new added
-  [userRoles.SR_PORTFOLIO_MANAGER]: 'assignedSRPORTFOLIOMANAGER',
-  [userRoles.PORTFOLIO_MANAGER]: 'assignedPORTFOLIOMANAGER',
-  [userRoles.AS_PORTFOLIO_MANAGER]: 'assignedASPORTFOLIOMANAGER',
-  [userRoles.SR_BDE]: 'assignedSRBDE',
-  [userRoles.BDE]: 'assignedBDE',
-
-};
+const { SUPERVISOR_FIELD_MAP } = require('../config/constants/roleHierarchyMap');
 
 const getAllChildUserIds1 = async (userId, role) => {
-  const field = roleToField[role];
+  const field = SUPERVISOR_FIELD_MAP[role];
   console.log("userId", userId, "role", role, "field", field)
   if (!field) return [];
 
@@ -41,7 +25,7 @@ const getAllChildUserIds = async (userId, role) => {
       return [];
     }
   
-    const field = roleToField[role];
+    const field = SUPERVISOR_FIELD_MAP[role];
    // console.log("Checking for userId:", userId, "role:", role, "field:", field);
   
     let allUserIds = [userId]; // ✅ 
