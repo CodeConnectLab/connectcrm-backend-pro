@@ -23,6 +23,13 @@ const bookingSchema = new mongoose.Schema({
   RM: { type: String },
   unit: { type: String },
   size: { type: String },
+  /////// new fields
+  product : { type: String, required: false },
+  paymentplan : { type: String, required: false },
+  bsp1 : { type: String, required: false },
+  schem : { type: String, required: false },
+  /////// end new fields
+
 //   unit: { type: mongoose.Schema.Types.ObjectId, ref: 'Unit', required: false },
 //   size: { type: mongoose.Schema.Types.ObjectId, ref: 'Size', required: false },
   reference: {

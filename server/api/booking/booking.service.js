@@ -13,6 +13,10 @@ exports.addBooking = async (body, user, res) => {
             RM,
             unit,
             size,
+            product,
+            paymentplan,
+            bsp1,
+            schem,
             reference,
             paymentDetails,
             BSP,
@@ -50,6 +54,10 @@ exports.addBooking = async (body, user, res) => {
             RM,
             unit,
             size,
+            product,
+            paymentplan,
+            bsp1,
+            schem,
             reference,
             paymentDetails,
             BSP,
@@ -83,7 +91,7 @@ exports.addBooking = async (body, user, res) => {
 exports.updateBooking = async (bookingId, body, user) => {
     try {
         const { customer, projectName, email, contactName, bookingDate,
-            RM, unit, size, reference, paymentDetails, BSP, GST,
+            RM, unit, size, product, paymentplan, bsp1, schem, reference, paymentDetails, BSP, GST,
             OtherCharges, TSP, totalReceived,OtherGST,PLC, PLCGST,positioningCharges,positioningGST,
             GrossRevenue,CpRevenue,Discount,netRevenue, remark,
             bookingStatus } = body;
@@ -98,6 +106,10 @@ exports.updateBooking = async (bookingId, body, user) => {
                 RM,
                 unit,
                 size,
+                product,
+                paymentplan,
+                bsp1,
+                schem,
                 reference,
                 paymentDetails,
                 BSP,
@@ -419,7 +431,8 @@ exports.getUpcomingBooking = async (queryParams, user) => {
             DuePayement: (booking.paymentDetails.filter(payment => payment.status === 'unpaid'
                  && new Date(payment.date) >= new Date())).reduce((acc, payment) => 
                     acc + payment.amount, 0),
-            nextdueamount: booking.paymentDetails.find(payment => payment.status === 'unpaid'),     
+            nextdueamount: booking.paymentDetails.find(payment => payment.status === 'unpaid'), 
+            receivedAmount: booking.totalReceived,    
 
     
         }));
