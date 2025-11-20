@@ -74,6 +74,17 @@ router.post(
     controller.getFacebookPageList
   )
   ////////// uodate facebook page
+
+  /// add facebook page
+  router.post(
+    usersVersion + '/facebook-page',
+    auth.isAuthenticated({
+      // adminOnly: true
+    }),
+    // joiValidate(validationInputs.addFacebookPage),
+    controller.facebookPageWebhook
+  )
+
   router.put(
     usersVersion + '/facebook-page/:id',
     auth.isAuthenticated({

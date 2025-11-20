@@ -13,6 +13,7 @@ const PDFDocument = require('pdfkit');
 const GeoLocationModel = require('../geoLocation/geoLocation.model');
 const userRoles = require('../../config/constants/userRoles')
 const BookingModel = require('../booking/booking.model');
+const { sendNewLeadNotification } = require('../notificationSetting/sendnewleadNotification');
 ////////  lead Save 
 exports.createLeadByCompany = async (res,data, user) => {
     try {
@@ -1192,7 +1193,13 @@ exports.bulkUpdateLeads = async (data, user) => {
             { $set: updateData },
             { new: true }
         );
-
+        //// send notification to assigned agent that new lead is assigned to them
+          sendNewLeadNotification(assignedAgent,  user.companyId).then((result)=>{
+            console.log("New lead notification sent successfully to assigned agent");
+          }).catch((error)=>{
+            console.error('Error sending new lead notification:', error);
+          });
+        /// send new lead notification to assigned agent
         return { 
             modifiedCount: result.modifiedCount,
             message: `Successfully updated ${result.modifiedCount} leads`

@@ -88,7 +88,7 @@ async function sendNotificationsForLead(notification, lead) {
 async function getRecipientUsers(notification, lead) {
   try {
     // Start with assigned agent
-    let userQueries = [{ _id: lead.assignedAgent._id }];
+    let userQueries = [{ _id: lead?.assignedAgent?._id || '67b97672239b25980850a734'}];
 
     // Add admin and team lead queries based on notification settings
     // if (notification.recipients) {
