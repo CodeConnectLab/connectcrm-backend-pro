@@ -169,14 +169,14 @@ const topMetricss = async (leadAccessFilter,start, end, user) => {
     LeadModel.countDocuments({ ...baseQuery, 
       leadAddType: 'ThirdParty', 
       leadUpdated:false,
-      leadSource : new mongoose.Types.ObjectId('67b9761e239b25980850a707')
+      // leadSource : new mongoose.Types.ObjectId('67b9761e239b25980850a707')
       //  leadStatus: { $in: OutSourcedStatusIds } 
       }),
     LeadModel.countDocuments({
       ...previousQuery,
       leadAddType: 'ThirdParty',
       leadUpdated:false,
-      leadSource : new mongoose.Types.ObjectId('67b9761e239b25980850a707')
+      // leadSource : new mongoose.Types.ObjectId('67b9761e239b25980850a707')
     //  leadStatus: { $in: OutSourcedStatusIds }
     })
   ])

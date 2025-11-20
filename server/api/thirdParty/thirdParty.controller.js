@@ -1,6 +1,7 @@
 
 
 const service = require("./thirdParty.service")
+const service1 = require("./thirdParty1.service")
 
 exports.getCurlApi=(req,res,next)=>{
     return service.getCurlApi(req.query.leadSource, req.user)
@@ -38,6 +39,8 @@ exports.facebookLeadGenWebhook = (req, res) => {
         .catch(error => responseHandler.error(res, error, error.message, 500));
 };
 
+
+
 exports.facebookPageWebhook = (req, res) => {
     console.log("🔥 Facebook page webhook POST hit:", JSON.stringify(req.body, null, 2));
     return service.facebookPageWebhook(req.body, req.user)
@@ -60,3 +63,28 @@ exports.UpdateFacebookPageList = (req, res) => {
 }
 
 
+
+
+
+////////////////////// second facebook account lead gen webhook verification
+exports.facebookLeadGenWebhookVarifySecondAccount = (req, res) => {
+    //  console.log('Facebook lead gen webhook verification request received:', req);
+    console.log('Facebook lead gen webhook verification request received:');
+    const verifyToken = req.query['hub.verify_token'];
+    const challenge = req.query['hub.challenge'];
+    console.log('verifyToken:', verifyToken);
+    console.log('challenge:', challenge);
+    if (verifyToken === process.env.FACEBOOK_VERIFY_TOKEN) {
+        console.log('Webhook verification successful');
+        return res.status(200).send(challenge);
+    } else {
+        return res.status(403).send('Forbidden');
+    }
+  }
+  exports.facebookLeadGenWebhookSecondAccount = (req, res) => {
+    console.log("🔥 Facebook webhook POST hit:", JSON.stringify(req.body, null, 2));
+    return service1.facebookLeadGenWebhook(req.query, req.body)
+        .then(result => responseHandler.success(res, result, "Facebook lead gen webhook processed successfully!", 200))
+        .catch(error => responseHandler.error(res, error, error.message, 500));
+  }
+  ////////////////////// second facebook account lead gen webhook

@@ -45,17 +45,25 @@ router.post(
     controller.facebookLeadGenWebhook
   )
 
-
-
-  //////////add facebook page
-  router.post(
-    usersVersion + '/facebook-page',
-    auth.isAuthenticated({
-      // adminOnly: true
-    }),
-    controller.facebookPageWebhook
+  /////////////// second facebook account lead gen webhook
+  router.get(
+    usersVersion + '/facebook-lead-gen-webhook-second-account',
+    // auth.isAuthenticated({
+    //   // adminOnly: true
+    // }),
+    controller.facebookLeadGenWebhookVarifySecondAccount
   )
 
+  router.post(
+    usersVersion + '/facebook-lead-gen-webhook-second-account',
+    // auth.isAuthenticated({
+    //   // adminOnly: true
+    // }),
+    controller.facebookLeadGenWebhookSecondAccount
+  )
+  /////////////// second facebook account lead gen webhook
+
+  
   /////////get facebook page list
   router.get(
     usersVersion + '/facebook-page',

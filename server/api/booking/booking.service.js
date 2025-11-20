@@ -428,9 +428,11 @@ exports.getUpcomingBooking = async (queryParams, user) => {
             BookingAmount: booking.TSP,
             _id: booking._id,
             //////
-            DuePayement: (booking.paymentDetails.filter(payment => payment.status === 'unpaid'
-                 && new Date(payment.date) >= new Date())).reduce((acc, payment) => 
-                    acc + payment.amount, 0),
+            // DuePayement: (booking.paymentDetails.filter(payment => payment.status === 'unpaid'
+            //      && new Date(payment.date) >= new Date())).reduce((acc, payment) => 
+            //         acc + payment.amount, 0),
+            DuePayement : booking?.TSP - booking?.totalReceived,
+            // DuePayement: booking.paymentDetails.find(payment => payment.status === 'unpaid')?.amount || 0,
             nextdueamount: booking.paymentDetails.find(payment => payment.status === 'unpaid'), 
             receivedAmount: booking.totalReceived,    
 

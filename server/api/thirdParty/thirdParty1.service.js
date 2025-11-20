@@ -173,8 +173,8 @@ async function getPageDetailsFromDB(pageId) {
   }
 }
 
-const APP_ID = process.env.FACEBOOK_APP_ID;
-const APP_SECRET = process.env.FACEBOOK_APP_SECRET;
+const APP_ID = process.env.FACEBOOK_APP_ID1;
+const APP_SECRET = process.env.FACEBOOK_APP_SECRET1;
 
 // ✅ Check if access token is valid
 async function isAccessTokenValid(token) {
