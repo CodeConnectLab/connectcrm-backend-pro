@@ -220,6 +220,7 @@ exports.facebookLeadGenWebhook = async (query, body) => {
     }
 
     const pageDetails = await getPageDetailsFromDB(pageId);
+    console.log("pageDetails", pageDetails);
     if (!pageDetails || !pageDetails.accessToken) {
       throw new Error(`No access token found in DB for page ID: ${pageId}`);
     }
@@ -310,7 +311,7 @@ if (form_id) {
   }
 }
     console.log("📊 Final values - campaignName:", campaignName, "adName:", adName, "formName:", formName);
-    if(campaignName===' '){
+    if(campaignName===''){
        campaignName = pageDetails?.pageName || '';
     }
     const leadPayload = {
@@ -321,7 +322,7 @@ if (form_id) {
       // leadSource: pageDetails?.leadSource || '67b9761e239b25980850a707', // Default or provided lead source
       leadAddType: "ThirdParty",
       fbCompainName: formName || 'Unknown Campaign',
-      campaignName: campaignName || '', // <-- Add this line
+      campaignName: campaignName || pageDetails?.pageName || '', // <-- Add this line
       adName: adName || '', // <-- Add this line
       firstName: fieldMap.full_name || fieldMap.first_name || '',
       email: fieldMap?.email || '',
