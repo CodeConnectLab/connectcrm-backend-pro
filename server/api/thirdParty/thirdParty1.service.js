@@ -323,7 +323,7 @@ if (form_id) {
       leadAddType: "ThirdParty",
       fbCompainName: formName || 'Unknown Campaign',
       campaignName: campaignName || pageDetails?.pageName || '', // <-- Add this line
-      adName: adName || '', // <-- Add this line
+      adName: adName || pageDetails?.pageName || '', // <-- Add this line
       firstName: fieldMap.full_name || fieldMap.first_name || '',
       email: fieldMap?.email || '',
       city: fieldMap?.city || '', 
