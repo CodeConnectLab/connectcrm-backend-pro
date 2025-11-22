@@ -118,9 +118,9 @@ exports.OutsourceLead = async (apiKey, body) => {
       leadAddType: 'ThirdParty',
       leadSource: leadSource,
       companyId: companyId,
-      leadStatus: '67b97672239b25980850a734',
+      // leadStatus: '67b97672239b25980850a734',
       /// i want current time + 6 minutes
-      followUpDate: new Date(new Date().getTime() + 5 * 60 * 1000), /// for send notification after 5 minutes in app
+      followUpDate: new Date(), /// for send notification after 5 minutes in app
       createdAt: new Date()
     }
     // Save to Lead table
