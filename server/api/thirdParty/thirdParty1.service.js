@@ -267,12 +267,13 @@ if (ad_id) {
   console.log("📋 Ad Details:", adDetailsRes.data);
   adName = adDetailsRes.data?.name || '';
   const campaignId = adDetailsRes.data?.campaign_id;
-
+console.log("campaignId", campaignId);
   // 2. Get campaign name
   if (campaignId) {
     const campaignDetailsRes = await axios.get(
       `https://graph.facebook.com/v23.0/${campaignId}?fields=name&access_token=${ACCESS_TOKEN}`
     );
+    console.log("campaignDetailsRes", campaignDetailsRes.data);
     campaignName = campaignDetailsRes.data?.name || '';
   }
 }
@@ -288,13 +289,13 @@ if (form_id) {
     formName = '';
   }
 }
-
+   console.log("campaignName", campaignName, "adName", adName, "formName", formName);
     const leadPayload = {
       fbLeadGenId: leadgen_id,
       fbLeadGenFormId: form_id,
       fbLeadGenAdId: ad_id,
       companyId: pageDetails?.companyId || '67b2c739b9844cf70ce71233',
-      leadSource: pageDetails?.leadSource || '67b9761e239b25980850a707', // Default or provided lead source
+      // leadSource: pageDetails?.leadSource || '67b9761e239b25980850a707', // Default or provided lead source
       leadAddType: "ThirdParty",
       fbCompainName: formName || 'Unknown Campaign',
       campaignName: campaignName || '', // <-- Add this line
@@ -304,10 +305,10 @@ if (form_id) {
       city: fieldMap?.city || '', 
       contactNumber: fieldMap.phone_number || '',
       description: "Lead generated from Facebook", 
-      leadStatus: '67b97672239b25980850a734',
+      // leadStatus: '67b97672239b25980850a734',
       /// i want current time + 6 minutes
-      followUpDate: new Date(new Date().getTime() + 5 * 60 * 1000), /// for send notification after 5 minutes in app
-      // followUpDate: new Date(),
+      // followUpDate: new Date(new Date()), /// for send notification after 5 minutes in app
+      followUpDate: new Date(),
     };
 
     console.log("📥 Saving lead to DB:", leadPayload);

@@ -293,8 +293,7 @@ if (form_id) {
       fbLeadGenId: leadgen_id,
       fbLeadGenFormId: form_id,
       fbLeadGenAdId: ad_id,
-      companyId: pageDetails?.companyId || '67b2c739b9844cf70ce71233',
-      leadSource: pageDetails?.leadSource || '67b9761e239b25980850a707', // Default or provided lead source
+      companyId: pageDetails?.companyId,
       leadAddType: "ThirdParty",
       fbCompainName: formName || 'Unknown Campaign',
       campaignName: campaignName || '', // <-- Add this line
@@ -366,23 +365,46 @@ exports.getFacebookPageList = async (user) => {
 
 /////////update facebook page
 exports.UpdateFacebookPageList = async (Id, body, user) => {
-
   const { pageId, pageName, accessToken, } = body;
   try {
-    const page = await FacebookPage.findOneAndUpdate(
-      { Id },
-      { pageName, accessToken, pageId },
-      { new: true }
-    );
-    if (!page) {
+    // First, find the existing page by _id
+    const existingPage = await FacebookPage.findById(Id);
+    if (!existingPage) {
       throw new Error('Page not found');
     }
-    return page;
+
+    // If pageId is being changed, check if new pageId already exists
+    if (pageId && pageId !== existingPage.pageId) {
+      const pageWithSameId = await FacebookPage.findOne({ 
+        pageId: pageId,
+        _id: { $ne: Id } // Exclude current page
+      });
+      if (pageWithSameId) {
+        throw new Error(`Page with pageId "${pageId}" already exists. Please use a different pageId.`);
+      }
+    }
+
+    // Prepare update object
+    const updateData = {};
+    if (pageName) updateData.pageName = pageName;
+    if (accessToken) updateData.accessToken = accessToken;
+    if (pageId) updateData.pageId = pageId;
+
+    // Update the page
+    const updatedPage = await FacebookPage.findByIdAndUpdate(
+      Id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    return updatedPage;
   } catch (error) {
     console.error("Error updating Facebook page:", error);
+    // Handle duplicate key error specifically
+    if (error.code === 11000 || error.message.includes('duplicate key')) {
+      throw new Error(`Page with pageId "${pageId}" already exists. Please use a different pageId.`);
+    }
     return Promise.reject(error);
   }
-
-
 }
 
