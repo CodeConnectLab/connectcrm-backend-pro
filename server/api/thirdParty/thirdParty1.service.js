@@ -228,6 +228,7 @@ exports.facebookLeadGenWebhook = async (query, body) => {
     const { leadgen_id, form_id, created_time, ad_id } = changes.value;
 
     console.log("📌 Processing leadgen_id:", leadgen_id);
+    console.log("📌 Webhook data - ad_id:", ad_id, "form_id:", form_id);
 
     // ✅ Validate or Refresh Token if needed
     const valid = await isAccessTokenValid(ACCESS_TOKEN);
@@ -245,38 +246,57 @@ exports.facebookLeadGenWebhook = async (query, body) => {
 
     // ✅ Fetch Lead Data
     const leadResponse = await axios.get(
-      `https://graph.facebook.com/v23.0/${leadgen_id}?access_token=${ACCESS_TOKEN}`
+      `https://graph.facebook.com/v23.0/${leadgen_id}?fields=field_data,ad_id&access_token=${ACCESS_TOKEN}`
     );
     const leadData = leadResponse.data;
+
+    // ✅ Get ad_id from webhook or lead data (lead data me bhi ad_id ho sakta hai)
+    const finalAdId = ad_id || leadData?.ad_id;
+    console.log("📌 Final ad_id (from webhook or lead data):", finalAdId);
 
     // ✅ Create Lead Object
     const fields = leadData?.field_data || [];
     console.log("📋 Lead Data:", fields);
     const fieldMap = Object.fromEntries(fields.map(f => [f.name, f.values?.[0]]));
-console.log("📋 Lead Data:", fieldMap);
+    console.log("📋 Lead Data:", fieldMap);
 
-     
-let adName = '';
-let campaignName = '';
+    let adName = '';
+    let campaignName = '';
 
-if (ad_id) {
-  // 1. Get ad details (ad name + campaign id)
-  const adDetailsRes = await axios.get(
-    `https://graph.facebook.com/v23.0/${ad_id}?fields=name,campaign_id&access_token=${ACCESS_TOKEN}`
-  );
-  console.log("📋 Ad Details:", adDetailsRes.data);
-  adName = adDetailsRes.data?.name || '';
-  const campaignId = adDetailsRes.data?.campaign_id;
-console.log("campaignId", campaignId);
-  // 2. Get campaign name
-  if (campaignId) {
-    const campaignDetailsRes = await axios.get(
-      `https://graph.facebook.com/v23.0/${campaignId}?fields=name&access_token=${ACCESS_TOKEN}`
-    );
-    console.log("campaignDetailsRes", campaignDetailsRes.data);
-    campaignName = campaignDetailsRes.data?.name || '';
-  }
-}
+    // ✅ Get ad and campaign details only if ad_id exists
+    if (finalAdId) {
+      try {
+        // 1. Get ad details (ad name + campaign id)
+        const adDetailsRes = await axios.get(
+          `https://graph.facebook.com/v23.0/${finalAdId}?fields=name,campaign_id&access_token=${ACCESS_TOKEN}`
+        );
+        console.log("📋 Ad Details:", adDetailsRes.data);
+        adName = adDetailsRes.data?.name || '';
+        const campaignId = adDetailsRes.data?.campaign_id;
+        console.log("📋 Campaign ID from ad:", campaignId);
+        
+        // 2. Get campaign name
+        if (campaignId) {
+          try {
+            const campaignDetailsRes = await axios.get(
+              `https://graph.facebook.com/v23.0/${campaignId}?fields=name&access_token=${ACCESS_TOKEN}`
+            );
+            console.log("📋 Campaign Details:", campaignDetailsRes.data);
+            campaignName = campaignDetailsRes.data?.name || '';
+          } catch (campaignError) {
+            console.error("⚠️ Error fetching campaign details:", campaignError.message);
+            campaignName = '';
+          }
+        }
+      } catch (adError) {
+        console.error("⚠️ Error fetching ad details:", adError.message);
+        // Continue without ad/campaign details
+        adName = '';
+        campaignName = '';
+      }
+    } else {
+      console.log("ℹ️ No ad_id found in webhook or lead data - lead came directly from form (not from ad)");
+    }
 
 let formName = '';
 if (form_id) {
@@ -289,11 +309,14 @@ if (form_id) {
     formName = '';
   }
 }
-   console.log("campaignName", campaignName, "adName", adName, "formName", formName);
+    console.log("📊 Final values - campaignName:", campaignName, "adName:", adName, "formName:", formName);
+    if(campaignName===' '){
+       campaignName = pageDetails?.pageName || '';
+    }
     const leadPayload = {
       fbLeadGenId: leadgen_id,
       fbLeadGenFormId: form_id,
-      fbLeadGenAdId: ad_id,
+      fbLeadGenAdId: finalAdId || null,
       companyId: pageDetails?.companyId || '67b2c739b9844cf70ce71233',
       // leadSource: pageDetails?.leadSource || '67b9761e239b25980850a707', // Default or provided lead source
       leadAddType: "ThirdParty",
@@ -319,7 +342,7 @@ if (form_id) {
       leadgenId: leadgen_id,
       formId: form_id,
       createdTime: created_time,
-      adId: ad_id,
+      adId: finalAdId || null,
       leadId: saved._id,
       message: "Facebook lead gen webhook processed successfully"
     };
