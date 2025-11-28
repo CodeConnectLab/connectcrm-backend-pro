@@ -327,7 +327,7 @@ if (form_id) {
       firstName: fieldMap.full_name || fieldMap.first_name || '',
       email: fieldMap?.email || '',
       city: fieldMap?.city || '', 
-      contactNumber: fieldMap.phone_number || '',
+      contactNumber: fieldMap?.phone_number || fieldMap?.phone || '',
       description: "Lead generated from Facebook", 
       // leadStatus: '67b97672239b25980850a734',
       /// i want current time + 6 minutes
