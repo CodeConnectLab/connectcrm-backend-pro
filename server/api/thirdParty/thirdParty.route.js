@@ -94,6 +94,24 @@ router.post(
     controller.UpdateFacebookPageList
   )
 
+  // Setup webhook subscription for Facebook page (second account)
+  router.post(
+    usersVersion + '/facebook-page/setup-webhook-subscription',
+    auth.isAuthenticated({
+      // adminOnly: true
+    }),
+    controller.setupWebhookSubscription
+  )
+
+  // Check webhook subscription status (second account)
+  router.post(
+    usersVersion + '/facebook-page/check-webhook-subscription',
+    auth.isAuthenticated({
+      // adminOnly: true
+    }),
+    controller.checkWebhookSubscription
+  )
+
 
 
 module.exports = router

@@ -88,3 +88,21 @@ exports.facebookLeadGenWebhookVarifySecondAccount = (req, res) => {
         .catch(error => responseHandler.error(res, error, error.message, 500));
   }
   ////////////////////// second facebook account lead gen webhook
+
+  // Setup webhook subscription for Facebook page
+  exports.setupWebhookSubscription = (req, res) => {
+    console.log("🔥 Setup webhook subscription request received");
+    const { pageId, pageAccessToken } = req.body;
+    return service1.setupWebhookSubscription(pageId, pageAccessToken, req.user)
+        .then(result => responseHandler.success(res, result, "Webhook subscription setup successfully!", 200))
+        .catch(error => responseHandler.error(res, error, error.message, 500));
+  }
+
+  // Check webhook subscription status
+  exports.checkWebhookSubscription = (req, res) => {
+    console.log("🔥 Check webhook subscription request received");
+    const { pageId, pageAccessToken } = req.body;
+    return service1.checkWebhookSubscription(pageId, pageAccessToken)
+        .then(result => responseHandler.success(res, result, "Webhook subscription status retrieved successfully!", 200))
+        .catch(error => responseHandler.error(res, error, error.message, 500));
+  }
