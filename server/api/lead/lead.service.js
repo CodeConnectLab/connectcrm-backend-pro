@@ -121,7 +121,7 @@ exports.bulkLeadUpload = async (fileData, user, formData) => {
           pinCode: lead.pinCode || '',
           alternatePhone: lead.alternatePhone || '',
           leadCost: lead.leadCost || 0,
-          leadAddType: 'Import',
+          leadAddType: 'ThirdParty',
           leadWonAmount: lead.leadWonAmount || 0,
           addCalender: false,
           calanderMassage: '',
@@ -289,7 +289,46 @@ const getAllLeadByCompanyWithPagination = async (
         query.leadStatus = new Types.ObjectId(filters.leadStatus)
       }
       if (filters?.assignedAgent) {
-        query.assignedAgent = new Types.ObjectId(filters.assignedAgent)
+        // check multiple assignedAgent ID LIKE assignedAgent=id1,id2,id3
+        const requestedAgentIds = filters.assignedAgent
+          .split(',')
+          .map(id => id.trim())
+          .filter(id => id && Types.ObjectId.isValid(id))
+          .map(id => new Types.ObjectId(id))
+        
+        if (requestedAgentIds.length > 0) {
+          // Get allowed agent IDs from leadAccessFilter (already in query)
+          let allowedAgentIds = []
+          
+          if (query.assignedAgent) {
+            if (query.assignedAgent instanceof Types.ObjectId) {
+              // Single ID (USER role)
+              allowedAgentIds = [query.assignedAgent]
+            } else if (query.assignedAgent.$in && Array.isArray(query.assignedAgent.$in)) {
+              // Array of IDs (TEAM_ADMIN, etc.)
+              allowedAgentIds = query.assignedAgent.$in.map(id => 
+                id instanceof Types.ObjectId ? id : new Types.ObjectId(id)
+              )
+            }
+          } else {
+            // SUPER_ADMIN - no restrictions, use all requested IDs
+            allowedAgentIds = requestedAgentIds
+          }
+          
+          // Intersect requested IDs with allowed IDs to maintain access control
+          const allowedIdsSet = new Set(allowedAgentIds.map(id => id.toString()))
+          const filteredAgentIds = requestedAgentIds.filter(id => allowedIdsSet.has(id.toString()))
+          
+          if (filteredAgentIds.length > 0) {
+            // Set query.assignedAgent with filtered IDs - this will override the leadAccessFilter
+            query.assignedAgent = filteredAgentIds.length === 1 
+              ? filteredAgentIds[0] 
+              : { $in: filteredAgentIds }
+          } else {
+            // No matching IDs - return empty result
+            query.assignedAgent = { $in: [] }
+          }
+        }
       }
       if (filters?.leadSource) {
         query.leadSource = new Types.ObjectId(filters.leadSource)
@@ -1351,7 +1390,18 @@ exports.exportExcel = async (data, user) => {
             query.leadStatus = new Types.ObjectId(status);
         }
         if (assignedAgent) {
-            query.assignedAgent = new Types.ObjectId(assignedAgent);
+            // Support multiple assignedAgent IDs: assignedAgent=id1,id2,id3
+            const assignedAgentIds = assignedAgent
+                .split(',')
+                .map(id => id.trim())
+                .filter(id => id && Types.ObjectId.isValid(id))
+                .map(id => new Types.ObjectId(id));
+            
+            if (assignedAgentIds.length > 0) {
+                query.assignedAgent = assignedAgentIds.length === 1 
+                    ? assignedAgentIds[0] 
+                    : { $in: assignedAgentIds };
+            }
         }
         if (source) {
             query.leadSource = new Types.ObjectId(source);
@@ -1570,7 +1620,18 @@ exports.exportPDF = async (data, user) => {
       query.leadStatus = new Types.ObjectId(status);
     }
     if (assignedAgent) {
-      query.assignedAgent = new Types.ObjectId(assignedAgent);
+      // Support multiple assignedAgent IDs: assignedAgent=id1,id2,id3
+      const assignedAgentIds = assignedAgent
+          .split(',')
+          .map(id => id.trim())
+          .filter(id => id && Types.ObjectId.isValid(id))
+          .map(id => new Types.ObjectId(id));
+      
+      if (assignedAgentIds.length > 0) {
+          query.assignedAgent = assignedAgentIds.length === 1 
+              ? assignedAgentIds[0] 
+              : { $in: assignedAgentIds };
+      }
     }
     if (source) {
       query.leadSource = new Types.ObjectId(source);
